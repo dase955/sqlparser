@@ -5,7 +5,57 @@ from ply import lex,yacc
 from . import lexer
 from .exceptions import GrammarException
 
+def p_expression(p):
+    """ expression : db END
+    """
+    p[0] = p[1]
 
+    
+
+###################################################
+############         Database          ############
+###################################################
+
+def p_db(p):
+    """ db : create_db
+           | show_db
+           | drop_db
+           | use_db
+    """
+    p[0] = p[1]
+    
+def p_create_db(p):
+    """ create_db : CREATE DATABASE STRING
+    """
+    p[0] = {
+        'type' : 'create_db',
+        'name' : p[3]
+    }
+
+def p_use_db(p):
+    """ use_db : USE STRING
+    """
+    p[0] = {
+        'type' : 'use_db',
+        'name' : p[2]
+    }
+    
+def p_show_db(p):
+    """ show_db : SHOW DATABASES
+    """
+    p[0] = {
+        'type' : 'show_db'
+    }
+    
+def p_drop_db(p):
+    """ drop_db : DROP DATABASE STRING
+    """
+    p[0] = {
+        'type' : 'drop_db',
+        'name' : p[3]
+    }
+
+'''
 def p_expression(p):
     """ expression : dml END
                    | ddl END
@@ -27,7 +77,6 @@ def p_ddl(p):
             | drop
     """
     p[0] = p[1]
-
 
 ###################################################
 ############         select            ############
@@ -465,6 +514,8 @@ def p_null(p):
         p[0] = 'NULL'
     else:
         p[0] = 'NOT NULL'
+'''
+
 
 # empty return None
 # so expression like (t : empty) => len(p)==2

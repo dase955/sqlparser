@@ -29,6 +29,9 @@ reserved = {
 
     'create': 'CREATE',
     'table' : 'TABLE',
+    'use'   : 'USE',
+    'database': 'DATABASE',
+    'databases': 'DATABASES',
     'alter' : 'ALTER',
     'drop'  : 'DROP',
     'show'  : 'SHOW',
