@@ -2,6 +2,7 @@ from caller.call_conn import *
 from caller.call_db import *
 from caller.call_coll import *
 from caller.call_alias import *
+from caller.call_part import *
 
 func_map = {
     'connect' : connect,
@@ -18,5 +19,10 @@ func_map = {
     'rename_coll' : rename_coll,
     'load_coll' : load_coll,
     'release_coll' : release_coll,
-    'compact_coll' : compact_coll
+    'compact_coll' : compact_coll,
+    'create_part' : create_part,
+    'show_part' : show_part,
+    'drop_part' : drop_part,
+    'load_part' : load_part,
+    'release_part' : release_part
 }

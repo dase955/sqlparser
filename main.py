@@ -9,6 +9,8 @@ if __name__ == '__main__':
             sql = input('milvus > ')
         except EOFError:
             break
+        except KeyboardInterrupt:
+            break
         
         if not sql.endswith(';'):
             sql = sql + ';'

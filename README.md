@@ -37,12 +37,12 @@ milvus sql parser
 
 ### Manage Partitions
 
- - create partition partition_name on collection_name [with (description='...')]; TODO
+ - CREATE PARTITION {part_name} ON {coll_name} [WITH {"description":"..."}];
 
- - show partitions on collection_name; TODO
+ - SHOW PARTITIONS ON {coll_name};
 
- - drop partition partition_name on collection_name; TODO
+ - DROP PARTITION {part_name} ON {coll_name};
 
- - load partition partition_name1, ... on collection_name [with (replica_number=number)]; TODO
+ - LOAD PARTITION {part_name_1, part_name_2, ...} ON {coll_name} [WITH {"replica_number":2}];
  
- - release partition partition_name1, ... on collection_name; TODO
+ - RELEASE PARTITION {part_name_1, part_name_2, ...} ON {coll_name};

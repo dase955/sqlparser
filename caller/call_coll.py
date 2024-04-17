@@ -21,7 +21,7 @@ def show_coll(query):
     else:
         collection_names = utility.list_collections(using=using, timeout=timeout)
 
-    collection_list = [collection_name + ' : ' + Collection(collection_name, using=using).description for collection_name in collection_names]
+    collection_list = [collection_name for collection_name in collection_names]
 
     # print output
     print('collection:')

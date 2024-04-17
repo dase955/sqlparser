@@ -8,6 +8,7 @@ from .exceptions import GrammarException
 def p_expression(p):
     """ expression : db END
                    | coll END
+                   | part END
     """
     p[0] = p[1]
 
@@ -147,6 +148,77 @@ def p_compact_coll(p):
         'type' : 'compact_coll',
         'name' : p[3]
     }
+    
+###################################################
+############         Partition         ############
+###################################################
+def p_part(p):
+    """ part : create_part
+             | show_part
+             | drop_part  
+             | load_part
+             | release_part
+    """
+    p[0] = p[1]
+
+def p_create_part(p):
+    """ create_part : CREATE PARTITION STRING ON STRING
+                    | CREATE PARTITION STRING ON STRING WITH "{" QSTRING ":" QSTRING "}"
+    """
+    p[0] = {
+        'type' : 'create_part',
+        'part' : p[3],
+        'coll' : p[5]
+    }
+    if len(p) > 6:
+        p[0][p[8]] = p[10]
+
+def p_show_part(p):
+    """ show_part : SHOW PARTITIONS ON STRING
+    """
+    p[0] = {
+        'type' : 'show_part',
+        'coll' : p[4]
+    }
+
+def p_drop_part(p):
+    """ drop_part : DROP PARTITION STRING ON STRING
+    """
+    p[0] = {
+        'type' : 'drop_part',
+        'part' : p[3],
+        'coll' : p[5]
+    }
+
+def p_load_part(p):
+    """ load_part : LOAD PARTITION STRING part_list ON STRING
+                  | LOAD PARTITION STRING part_list ON STRING WITH "{" QSTRING ":" NUMBER "}"
+    """
+    p[0] = {
+        'type' : 'load_part',
+        'coll' : p[6],
+        'parts' : [p[3]] + p[4]
+    }
+    if len(p) > 7:
+        p[0][p[9]] = p[11]
+
+def p_release_part(p):
+    """ release_part : RELEASE PARTITION STRING part_list ON STRING
+    """
+    p[0] = {
+        'type' : 'release_part',
+        'coll' : p[6],
+        'parts' : [p[3]] + p[4]
+    }
+    
+def p_part_list(p):
+    """ part_list : empty
+                  | COMMA STRING part_list
+    """
+    if len(p) == 2:
+        p[0] = []
+    else:
+        p[0] = [p[2]] + p[3]
     
 '''
 def p_expression(p):
