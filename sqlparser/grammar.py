@@ -64,6 +64,9 @@ def p_coll(p):
              | drop_alias
              | show_alias
              | rename_coll
+             | load_coll
+             | release_coll
+             | compact_coll
     """
     p[0] = p[1]
 
@@ -117,6 +120,34 @@ def p_rename_coll(p):
         'new_coll' : p[5],
         'new_db' : p[7]
     }
+    
+def p_load_coll(p):
+    """ load_coll : LOAD COLLECTION STRING
+                  | LOAD COLLECTION STRING WITH "{" QSTRING ":" NUMBER "}"
+    """
+    p[0] = {
+        'type' : 'load_coll',
+        'name' : p[3]
+    }
+    if len(p) > 4:
+        p[0][p[6]] = p[8]
+    
+def p_release_coll(p):
+    """ release_coll : RELEASE COLLECTION STRING
+    """
+    p[0] = {
+        'type' : 'release_coll',
+        'name' : p[3]
+    }
+    
+def p_compact_coll(p):
+    """ compact_coll : COMPACT COLLECTION STRING
+    """
+    p[0] = {
+        'type' : 'compact_coll',
+        'name' : p[3]
+    }
+    
 '''
 def p_expression(p):
     """ expression : dml END

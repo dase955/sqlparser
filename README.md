@@ -5,33 +5,35 @@ milvus sql parser
 
 ### Manage Databases
 
- - CREATE DATABASE [name]
+ - CREATE DATABASE {name}
 
- - USE [name]
+ - USE {name}
 
  - SHOW DATABASES
 
- - DROP DATABASE [name]
+ - DROP DATABASE {name}
 
 ### Manage Collections
 
  - create collection collection_name (name type other_attrs, ...) with (dynamic_field = true/false, shards_num=1[, description='...']);  TODO
 
- - RENAME COLLECTION [old_coll_name] TO [new_coll_name] IN [new_db_name]; 可以用来将collection在两个database里移动
+ - RENAME COLLECTION {old_coll_name} TO {new_coll_name} IN {new_db_name}; 可以用来将collection在两个database里移动
 
  - SHOW COLLECTIONS; 
 
- - DROP COLLECTION [name]; 
+ - DROP COLLECTION {name}; 
 
- - CREATE ALIAS [alias_name] FOR [coll_name];
+ - CREATE ALIAS {alias_name} FOR {coll_name};
 
- - DROP ALIAS [alias_name] FOR [coll_name];
+ - DROP ALIAS {alias_name} FOR {coll_name};
 
- - SHOW ALIASES FOR [coll_name];
+ - SHOW ALIASES FOR {coll_name};
 
- - load collection collection_name [with (replica_number=number)]; TODO
+ - LOAD COLLECTION {name} [WITH {"replica_number":2}];
 
- - release collection collection_name; TODO
+ - RELEASE COLLECTION {name};
+
+ - COMPACT COLLECTION {name};
 
 ### Manage Partitions
 

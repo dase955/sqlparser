@@ -72,3 +72,75 @@ def rename_coll(query):
     else:
         utility.rename_collection(old_collection_name=old_collection_name, new_collection_name=new_collection_name,
                                         new_db_name=new_db_name, using=using, timeout=timeout)
+
+def load_coll(query):
+    collection_name = query['name']
+    replica_number = 1
+    if 'replica_number' in query:
+        replica_number = query['replica_number']
+    
+    configur = ConfigParser() 
+    configur.read('config.ini')
+
+    # using -- connection alias
+    section = 'Connection'
+    using = configur.get(section, 'alias')
+
+    timeout = None
+    _async = False
+    _refresh = False
+    section = 'Collection'
+    if 'timeout' in configur[section]:
+        timeout = configur.getfloat(section, 'timeout')
+    if '_async' in configur[section]:
+        _async = configur.getboolean(section, '_async')
+    if '_refresh' in configur[section]:
+        _refresh = configur.getboolean(section, '_refresh')
+
+    collection = Collection(collection_name, using=using)
+    if timeout is None:
+        collection.load(replica_number=replica_number, _async=_async, _refresh=_refresh)
+    else:
+        collection.load(replica_number=replica_number, timeout=timeout, _async=_async, _refresh=_refresh)
+        
+def release_coll(query):
+    collection_name = query['name']
+    
+    configur = ConfigParser() 
+    configur.read('config.ini')
+
+    # using -- connection alias
+    section = 'Connection'
+    using = configur.get(section, 'alias')
+
+    timeout = None
+    section = 'Collection'
+    if 'timeout' in configur[section]:
+        timeout = configur.getfloat(section, 'timeout')
+
+    collection = Collection(collection_name, using=using)
+    if timeout is None:
+        collection.release()
+    else:
+        collection.release(timeout=timeout)
+        
+def compact_coll(query):
+    collection_name = query['name']
+    
+    configur = ConfigParser() 
+    configur.read('config.ini')
+
+    # using -- connection alias
+    section = 'Connection'
+    using = configur.get(section, 'alias')
+
+    timeout = None
+    section = 'Collection'
+    if 'timeout' in configur[section]:
+        timeout = configur.getfloat(section, 'timeout')
+
+    collection = Collection(collection_name, using=using)
+    if timeout is None:
+        collection.compact()
+    else:
+        collection.compact(timeout=timeout)

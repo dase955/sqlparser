@@ -15,5 +15,8 @@ func_map = {
     'create_alias' : create_alias,
     'drop_alias' : drop_alias,
     'show_alias' : show_alias,
-    'rename_coll' : rename_coll
+    'rename_coll' : rename_coll,
+    'load_coll' : load_coll,
+    'release_coll' : release_coll,
+    'compact_coll' : compact_coll
 }
