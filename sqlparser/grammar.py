@@ -7,10 +7,9 @@ from .exceptions import GrammarException
 
 def p_expression(p):
     """ expression : db END
+                   | coll END
     """
     p[0] = p[1]
-
-    
 
 ###################################################
 ############         Database          ############
@@ -55,6 +54,69 @@ def p_drop_db(p):
         'name' : p[3]
     }
 
+###################################################
+############        Collection         ############
+###################################################
+def p_coll(p):
+    """ coll : show_coll
+             | drop_coll
+             | create_alias
+             | drop_alias
+             | show_alias
+             | rename_coll
+    """
+    p[0] = p[1]
+
+def p_show_coll(p):
+    """ show_coll : SHOW COLLECTIONS
+    """
+    p[0] = {
+        'type' : 'show_coll'
+    }
+    
+def p_drop_coll(p):
+    """ drop_coll : DROP COLLECTION STRING
+    """
+    p[0] = {
+        'type' : 'drop_coll',
+        'name' : p[3]
+    }
+
+def p_create_alias(p):
+    """ create_alias : CREATE ALIAS STRING FOR STRING
+    """
+    p[0] = {
+        'type' : 'create_alias',
+        'alias' : p[3],
+        'coll' : p[5]
+    }
+    
+def p_drop_alias(p):
+    """ drop_alias : DROP ALIAS STRING FOR STRING
+    """
+    p[0] = {
+        'type' : 'drop_alias',
+        'alias' : p[3],
+        'coll' : p[5]
+    }
+
+def p_show_alias(p):
+    """ show_alias : SHOW ALIASES FOR STRING
+    """
+    p[0] = {
+        'type' : 'show_alias',
+        'coll' : p[4]
+    }
+    
+def p_rename_coll(p):
+    """ rename_coll : RENAME COLLECTION STRING TO STRING IN STRING
+    """
+    p[0] = {
+        'type' : 'rename_coll',
+        'old_coll' : p[3],
+        'new_coll' : p[5],
+        'new_db' : p[7]
+    }
 '''
 def p_expression(p):
     """ expression : dml END
