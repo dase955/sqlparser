@@ -34,6 +34,8 @@ reserved = {
     'partitions' : 'PARTITIONS',
     'alias' : 'ALIAS',
     'aliases' : 'ALIASES',
+    'index' : 'INDEX',
+    'indexes': 'INDEXES',
     'use'   : 'USE',
     'database': 'DATABASE',
     'databases': 'DATABASES',

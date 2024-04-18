@@ -3,6 +3,7 @@ from caller.call_db import *
 from caller.call_coll import *
 from caller.call_alias import *
 from caller.call_part import *
+from caller.call_idx import *
 
 func_map = {
     'connect' : connect,
@@ -24,5 +25,8 @@ func_map = {
     'show_part' : show_part,
     'drop_part' : drop_part,
     'load_part' : load_part,
-    'release_part' : release_part
+    'release_part' : release_part,
+    'create_idx' : create_idx,
+    'show_idx' : show_idx,
+    'drop_idx' : drop_idx
 }

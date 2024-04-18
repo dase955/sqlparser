@@ -46,3 +46,13 @@ milvus sql parser
  - LOAD PARTITION {part_name_1, part_name_2, ...} ON {coll_name} [WITH {"replica_number":2}];
  
  - RELEASE PARTITION {part_name_1, part_name_2, ...} ON {coll_name};
+
+### Manage Indexes
+
+ - create index index_name on collection_name(field_name) with (index_type="IVF_FLAT", metric_type="L2", nlist=1024, param=number, ...); TODO
+ 
+ - CREATE INDEX {idx_name} ON {coll_name}({field_name});
+
+ - DROP INDEX {idx_name} ON {coll_name};
+
+ - SHOW INDEXES ON {coll_name};

@@ -9,6 +9,7 @@ def p_expression(p):
     """ expression : db END
                    | coll END
                    | part END
+                   | idx END
     """
     p[0] = p[1]
 
@@ -220,6 +221,43 @@ def p_part_list(p):
     else:
         p[0] = [p[2]] + p[3]
     
+###################################################
+############           Index           ############
+###################################################
+def p_idx(p):
+    """ idx : create_idx
+            | show_idx
+            | drop_idx
+    """
+    p[0] = p[1]
+
+def p_create_idx(p):
+    """ create_idx : CREATE INDEX STRING ON STRING "(" STRING ")"
+    """
+    p[0] = {
+        'type' : 'create_idx',
+        'idx' : p[3],
+        'coll' : p[5],
+        'field' : p[7]
+    }
+
+def p_show_idx(p):
+    """ show_idx : SHOW INDEXES ON STRING
+    """
+    p[0] = {
+        'type' : 'show_idx',
+        'coll' : p[4]
+    }
+
+def p_drop_idx(p):
+    """ drop_idx : DROP INDEX STRING ON STRING
+    """
+    p[0] = {
+        'type' : 'drop_idx',
+        'idx' : p[3],
+        'coll' : p[5]
+    }
+
 '''
 def p_expression(p):
     """ expression : dml END
