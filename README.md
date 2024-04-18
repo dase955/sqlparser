@@ -49,10 +49,16 @@ milvus sql parser
 
 ### Manage Indexes
 
- - create index index_name on collection_name(field_name) with (index_type="IVF_FLAT", metric_type="L2", nlist=1024, param=number, ...); TODO
+ - CREATE INDEX {idx_name} ON {coll_name}({field_name}) [WITH {"index_type":"IVF_FLAT","metric_type":"L2","nlist":1024,...}]; True -> 1, False -> 0
  
  - CREATE INDEX {idx_name} ON {coll_name}({field_name});
 
  - DROP INDEX {idx_name} ON {coll_name};
 
  - SHOW INDEXES ON {coll_name};
+
+### Manage Data
+
+ - BULK INSERT PARTITION {part_name} ON {coll_name} FROM {"data.json"};
+
+ - BULK INSERT COLLECTION {name} FROM {"data.json"};

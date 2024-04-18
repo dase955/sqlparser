@@ -8,6 +8,7 @@ def create_idx(query):
     index_params = None
     if 'params' in query:
         index_params = query['params']
+    print(index_params)
     
     configur = ConfigParser() 
     configur.read('config.ini')

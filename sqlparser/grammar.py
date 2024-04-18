@@ -10,6 +10,7 @@ def p_expression(p):
                    | coll END
                    | part END
                    | idx END
+                   | insert END
     """
     p[0] = p[1]
 
@@ -233,6 +234,7 @@ def p_idx(p):
 
 def p_create_idx(p):
     """ create_idx : CREATE INDEX STRING ON STRING "(" STRING ")"
+                   | CREATE INDEX STRING ON STRING "(" STRING ")" WITH "{" idx_param_list "}"
     """
     p[0] = {
         'type' : 'create_idx',
@@ -240,6 +242,36 @@ def p_create_idx(p):
         'coll' : p[5],
         'field' : p[7]
     }
+    if len(p) > 9:
+        new_param_list = dict()
+        old_param_list = p[11]
+        if 'index_type' in old_param_list:
+            new_param_list['index_type'] = old_param_list['index_type']
+            del old_param_list['index_type']
+        if 'metric_type' in old_param_list:
+            new_param_list['metric_type'] = old_param_list['metric_type']
+            del old_param_list['metric_type']
+        new_param_list['params'] = old_param_list
+        p[0]['params'] = new_param_list
+
+def p_idx_param_list(p):
+    """ idx_param_list : idx_param idx_param_list
+                       | COMMA idx_param idx_param_list
+                       | empty
+    """
+    p[0] = dict()
+    if len(p) == 3:
+        p[0] = p[1] | p[2]
+    elif len(p) == 4:
+        p[0] = p[2] | p[3]
+    
+def p_idx_param(p):
+    """ idx_param : QSTRING ":" QSTRING
+                  | QSTRING ":" NUMBER
+    """
+    p[0] = dict()
+    if len(p) > 2:
+        p[0][p[1]] = p[3]
 
 def p_show_idx(p):
     """ show_idx : SHOW INDEXES ON STRING
@@ -258,6 +290,44 @@ def p_drop_idx(p):
         'coll' : p[5]
     }
 
+###################################################
+############           Insert          ############
+###################################################
+def p_insert(p):
+    """ insert : bulk_insert
+    """
+    p[0] = p[1]
+
+def p_bulk_insert(p):
+    """ bulk_insert : BULK INSERT PARTITION STRING ON STRING FROM file_list
+                    | BULK INSERT COLLECTION STRING FROM file_list
+    """
+    if len(p) == 7:
+        p[0] = {
+            'type' : 'bulk_insert',
+            'coll' : p[4],
+            'files' : p[6]
+        }
+    else:
+        p[0] = {
+            'type' : 'bulk_insert',
+            'part' : p[4],
+            'coll' : p[6],
+            'files' : p[8]
+        }
+
+def p_file_list(p):
+    """ file_list : QSTRING file_list
+                  | COMMA QSTRING file_list
+                  | empty
+    """
+    if len(p) == 2:
+        p[0] = []
+    elif len(p) == 3:
+        p[0] = [p[1]] + p[2]
+    else:
+        p[0] = [p[2]] + p[3]
+        
 '''
 def p_expression(p):
     """ expression : dml END
@@ -718,7 +788,6 @@ def p_null(p):
     else:
         p[0] = 'NOT NULL'
 '''
-
 
 # empty return None
 # so expression like (t : empty) => len(p)==2
