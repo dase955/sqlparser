@@ -218,3 +218,6 @@ def create_coll(query):
     else:
         collection = Collection(name=collection_name, schema=schema, using=using, 
                                 num_shards=query['params'].get('num_shards', 1), timeout=timeout)
+        
+    # 检查时可以用CollectionSchema下的to_dict方法、Collection的num_shards方法和FieldSchema的to_dict方法
+    # 记得更新下READMD里Create Collection

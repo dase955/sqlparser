@@ -70,7 +70,7 @@ CREATE COLLECTION {coll_name} ({field_list}) with {param_list};
 
  - coll_name：新的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - field_list：field的列表，TODO
+ - field_list：field的列表，TODO，需要更新
 
  - param_list：param的列表，param可取的项如下。
 
