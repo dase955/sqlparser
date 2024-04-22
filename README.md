@@ -58,11 +58,28 @@ DROP DATABASE {name}
 
 ### 对Milvus Collection的管理
 
-#### 创建一个Collection
-TODO
+#### 创建一个Collection (TODO)
+
+创建一个Collection，每个参数的具体含义见milvus文档
+
 ```
-create collection collection_name (name type other_attrs, ...) with (dynamic_field = true/false, shards_num=1[, description='...']);
+CREATE COLLECTION {coll_name} ({field_list}) with {param_list};
 ```
+
+参数解释如下：
+
+ - coll_name：新的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - field_list：field的列表，TODO
+
+ - param_list：param的列表，param可取的项如下。
+
+   - description：创建的Collection的描述文本，其值为字符串，需包含在一对单/双引号里
+
+   - enable_dynamic_field：可取1或0，1代表True, 0代表False
+
+   - shards_num：取值为1到16里的整数
+
 
 #### 重命名一个Collection
 
@@ -223,7 +240,7 @@ DROP PARTITION {part_name} ON {coll_name};
 
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
-#### 将一个Collection的多个分区载入内存 TODO
+#### 将一个Collection的多个分区载入内存
 
 ```
 LOAD PARTITION {part_name_list} ON {coll_name};

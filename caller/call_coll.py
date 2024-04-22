@@ -144,3 +144,77 @@ def compact_coll(query):
         collection.compact()
     else:
         collection.compact(timeout=timeout)
+        
+def str_to_dtype_for_field(field_dict):
+    # field type 和 element type需要改
+    str_to_dtype = {}
+    str_to_dtype['BOOL'] = DataType.BOOL
+    str_to_dtype['INT8'] = DataType.INT8
+    str_to_dtype['INT16'] = DataType.INT16
+    str_to_dtype['INT32'] = DataType.INT32
+    str_to_dtype['INT64'] = DataType.INT64
+    str_to_dtype['FLOAT'] = DataType.FLOAT
+    str_to_dtype['DOUBLE'] = DataType.DOUBLE
+    str_to_dtype['VARCHAR'] = DataType.VARCHAR
+    str_to_dtype['JSON'] = DataType.JSON
+    str_to_dtype['ARRAY'] = DataType.ARRAY
+    str_to_dtype['BINARY_VECTOR'] = DataType.BINARY_VECTOR
+    str_to_dtype['FLOAT_VECTOR'] = DataType.FLOAT_VECTOR
+
+    # convert str to DataType
+    field_dict['type'] = str_to_dtype[field_dict['type']]
+    if 'element_type' in field_dict:
+        field_dict['element_type'] = str_to_dtype[field_dict['element_type']]
+
+    return field_dict
+
+def create_coll(query):
+    # convert field str to field dict, including converting DataType str to DataType
+    field_dicts = [str_to_dtype_for_field(item) for item in query['fields']]
+    collection_name = query['name']
+    
+    configur = ConfigParser() 
+    configur.read('config.ini')
+
+    # using is connection alias
+    section = 'Connection'
+    using = configur.get(section, 'alias')
+
+    timeout = None
+    section = 'Collection'
+    if 'timeout' in configur[section]:
+        timeout = configur.getfloat(section, 'timeout')
+
+    # convert field dict to FieldSchema
+    # pymilvus的construct_from_dict不能将vector的dim、array的max_capacity、varchar的max_length解析，这里分开处理
+    fields = []
+    for field_dict in field_dicts:
+        if field_dict['type'] in (DataType.BINARY_VECTOR, DataType.FLOAT_VECTOR):
+            fields.append(FieldSchema(name=field_dict['name'], dim=field_dict['dim'], 
+                                      dtype=field_dict['type'], description=field_dict.get('description', ''),
+                                      is_dynamic=field_dict.get('is_dynamic', False)))
+        elif field_dict['type'] is DataType.VARCHAR:
+            fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'],
+                                      max_length=field_dict['max_length'], description=field_dict.get('description', ''),
+                                      auto_id=field_dict.get('auto_id', False), is_primary=field_dict.get('is_primary', False),
+                                      is_partition_key=field_dict.get('is_partition_key', False), is_dynamic=field_dict.get('is_dynamic', False)))
+        elif field_dict['type'] is DataType.ARRAY and field_dict['element_type'] is not DataType.VARCHAR:
+            fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'],
+                                      max_capacity=field_dict['max_capacity'], element_type=field_dict['element_type'],
+                                      description=field_dict.get('description', ''), is_dynamic=field_dict.get('is_dynamic', False)))
+        elif field_dict['type'] is DataType.ARRAY and field_dict['element_type'] is DataType.VARCHAR:
+            fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'], 
+                                      max_capacity=field_dict['max_capacity'], element_type=field_dict['element_type'], 
+                                      max_length=field_dict['max_length'],
+                                      description=field_dict.get('description', ''), is_dynamic=field_dict.get('is_dynamic', False)))
+        else:
+            fields.append(FieldSchema.construct_from_dict(field_dict))
+        #fields = [FieldSchema.construct_from_dict(field_dict) for field_dict in field_dicts] 
+    schema = CollectionSchema(fields=fields, description=query['params'].get('description', ''), 
+                              enable_dynamic_field=query['params'].get('enable_dynamic_field', 0)) # 0->False, 1->True
+    if timeout is None:
+        collection = Collection(name=collection_name, schema=schema, using=using, 
+                                num_shards=query['params'].get('num_shards', 1))
+    else:
+        collection = Collection(name=collection_name, schema=schema, using=using, 
+                                num_shards=query['params'].get('num_shards', 1), timeout=timeout)

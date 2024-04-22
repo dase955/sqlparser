@@ -70,6 +70,7 @@ def p_coll(p):
              | load_coll
              | release_coll
              | compact_coll
+             | create_coll
     """
     p[0] = p[1]
 
@@ -151,6 +152,108 @@ def p_compact_coll(p):
         'name' : p[3]
     }
     
+def p_create_coll(p):
+    """ create_coll : COLLECTION COLLECTION STRING "(" field_list ")" WITH "{" coll_param_list "}"
+    """
+    p[0] = {
+        'type' : 'create_coll',
+        'name' : p[3],
+        'fields' : p[5],
+        'params' : p[9]
+    }
+    
+def p_field_list(p):
+    """ field_list : field field_list
+                   | COMMA field field_list
+                   | empty
+    """
+    if len(p) == 2:
+        p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
+        
+def p_field(p):
+    """ field : type attr_list
+    """
+    p[0] = [p[1] | p[2]]
+    
+def p_type(p):
+    """ type : STRING
+             | STRING "(" NUMBER ")"
+             | STRING STRING "(" NUMBER ")"
+             | STRING "(" NUMBER ")" STRING "(" NUMBER ")"
+    """
+    p[0] = dict()
+    if len(p) == 2: 
+        p[0]['type'] = p[1].upper()
+    elif len(p) == 5: # VARCHAR done
+        p[0]['type'] = p[1].upper() # should be VARCHAR
+        p[0]['max_length'] = p[3]
+    elif len(p) == 6:
+        if p[2].upper() == 'VECTOR': # VECTOR done, only ARRAY left
+            p[0]['type'] = (p[1] + '_' + p[2]).upper()
+            p[0]['dim'] = p[4]
+        elif p[2].upper() == 'ARRAY': # not include VARCHAR ARRAY
+            p[0]['type'] = p[2].upper()
+            p[0]['element_type'] = p[1].upper()
+            p[0]['max_capacity'] = p[4]
+    elif len(p) == 9: # VARCHAR ARRAY, ARRAY done
+        p[0]['type'] = p[5].upper() # should be ARRAY
+        p[0]['element_type'] = p[1].upper() # should be VARCHAR
+        p[0]['max_capacity'] = p[7]
+        p[0]['max_length'] = p[3]
+
+def attr_list(p): 
+    """ attr_list : empty
+                  | attr attr_list
+    """
+    if len(p) == 2:
+        p[0] = dict()
+    elif len(p) == 3:
+        p[0] = p[1] | p[2]
+        
+def attr(p): 
+    """ attr : STRING STRING
+             | STRING
+             | STRING "(" QSTRING ")"
+    """
+    p[0] = dict()
+    if len(p) == 2: 
+        if p[1].upper() == 'DYNAMIC':
+            p[0]['is_dynamic'] = True
+    elif len(p) == 3:
+        if p[1].upper() == 'PRIMARY' and p[2].upper() == 'KEY':
+            p[0]['is_primary'] = True
+        elif p[1].upper() == 'PARTITION' and p[2].upper() == 'KEY':
+            p[0]['is_partition_key'] = True
+        elif p[1].upper() == 'AUTO' and p[2].upper() == 'ID':
+            p[0]['auto_id'] = True
+    elif len(p) == 5:
+        if p[1].upper() == 'DESCRIPTION':
+            p[0]['description'] = p[3]
+            
+def coll_param_list(p):
+    """ coll_param_list : coll_param coll_param_list
+                        | COMMA coll_param coll_param_list
+                        | empty
+    """
+    if len(p) == 2:
+        p[0] = dict()
+    elif len(p) == 3:
+        p[0] = p[1] | p[2]
+    elif len(p) == 4:
+        p[0] = p[2] | p[3]
+        
+def p_coll_param(p):
+    """ coll_param : QSTRING ":" QSTRING
+                   | QSTRING ":" NUMBER
+    """
+    p[0] = dict()
+    if len(p) > 2:
+        p[0][p[1]] = p[3]
+        
 ###################################################
 ############         Partition         ############
 ###################################################
