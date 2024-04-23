@@ -176,9 +176,9 @@ def p_field_list(p):
         p[0] = p[2] + p[3]
         
 def p_field(p):
-    """ field : type attr_list
+    """ field : STRING type attr_list
     """
-    p[0] = [p[1] | p[2]]
+    p[0] = [{'name' : p[1] } | p[2] | p[3]]
     
 def p_type(p):
     """ type : STRING
