@@ -47,6 +47,13 @@ reserved = {
     'load'  : 'LOAD',
     'release': 'RELEASE',
     'compact': 'COMPACT',
+    
+    'dynamic': 'DYNAMIC',
+    'primary': 'PRIMARY',
+    'key'    : 'KEY',
+    'auto'   : 'AUTO',
+    'id'     : 'ID',
+    'description' : 'DESCRIPTION',
 
     'as'    : 'AS',
     'and'   : 'AND',

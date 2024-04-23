@@ -153,15 +153,23 @@ def p_compact_coll(p):
     }
     
 def p_create_coll(p):
-    """ create_coll : COLLECTION COLLECTION STRING "(" field_list ")" WITH "{" coll_param_list "}"
+    """ create_coll : CREATE COLLECTION STRING "(" field_list ")" WITH "{" coll_param_list "}"
+                    | CREATE COLLECTION STRING "(" field_list ")"
     """
-    # 注意细心检查是不是每个数据类型都可以建，每个数据类型下的参数(如primary key)是不是都可以设置，collection的各个参数是不是都可以设置。
-    p[0] = {
-        'type' : 'create_coll',
-        'name' : p[3],
-        'fields' : p[5],
-        'params' : p[9]
-    }
+    if len(p) == 11:
+        p[0] = {
+            'type' : 'create_coll',
+            'name' : p[3],
+            'fields' : p[5],
+            'params' : p[9]
+        }
+    else:
+        p[0] = {
+            'type' : 'create_coll',
+            'name' : p[3],
+            'fields' : p[5],
+            'params' : dict()
+        }
     
 def p_field_list(p):
     """ field_list : field field_list
@@ -186,22 +194,6 @@ def p_type(p):
              | STRING STRING "(" NUMBER ")"
              | STRING "(" NUMBER ")" STRING "(" NUMBER ")"
     """
-    # str_to_dtype['BOOL'] = DataType.BOOL
-    # str_to_dtype['INT8'] = DataType.INT8
-    # str_to_dtype['INT16'] = DataType.INT16
-    # str_to_dtype['INT32'] = DataType.INT32
-    # str_to_dtype['INT64'] = DataType.INT64
-    # str_to_dtype['FLOAT'] = DataType.FLOAT
-    # str_to_dtype['DOUBLE'] = DataType.DOUBLE
-    # str_to_dtype['VARCHAR'] = DataType.VARCHAR
-    # str_to_dtype['JSON'] = DataType.JSON
-    # str_to_dtype['ARRAY'] = DataType.ARRAY
-    # str_to_dtype['BINARY_VECTOR'] = DataType.BINARY_VECTOR
-    # str_to_dtype['FLOAT_VECTOR'] = DataType.FLOAT_VECTOR
-    # 注意看str_to_dtype的key，这些key是p[0]['type']的值
-    # STRING "(" NUMBER ")" 对应 VARCHAR(2) 这种
-    # STRING STRING "(" NUMBER ")" 对应 BINARY VECTOR （2）， FLOAT VECTOR （2），和BOOL ARRAY（2）这种，注意当ARRAY的元素为VARCHAR时需要另一种格式
-    # STRING "(" NUMBER ")" STRING "(" NUMBER ")" 当ARRAY的元素为VARCHAR，例子为VARCHAR（2）ARRAY（2）
     p[0] = dict()
     if len(p) == 2: 
         p[0]['type'] = p[1].upper()
@@ -222,7 +214,7 @@ def p_type(p):
         p[0]['max_capacity'] = p[7]
         p[0]['max_length'] = p[3]
 
-def attr_list(p): 
+def p_attr_list(p):
     """ attr_list : empty
                   | attr attr_list
     """
@@ -231,15 +223,13 @@ def attr_list(p):
     elif len(p) == 3:
         p[0] = p[1] | p[2]
         
-def attr(p): 
-    """ attr : STRING STRING
-             | STRING
-             | STRING "(" QSTRING ")"
+def p_attr(p):
+    """ attr : PRIMARY KEY
+             | PARTITION KEY
+             | AUTO ID
+             | DYNAMIC
+             | DESCRIPTION "(" QSTRING ")"
     """
-    # 例子：VARCHAR(2) PRIMARY KEY AUTO ID DESCRIPTION('test')，这里PRIMARY KEY、AUTO ID和DESCRIPTION的次序必须是可以随机排列的（需要检查一下）
-    # default value这个是不用支持的
-    # 这里attr有5个，is_dynamic、is_primary、is_partition_key、auto_id、description，记得认真检查下，是不是每个attr都可以实现
-    # Primary key和Partition key只能选一个，想设auto id必须先设置为primary key
     p[0] = dict()
     if len(p) == 2: 
         if p[1].upper() == 'DYNAMIC':
@@ -255,7 +245,7 @@ def attr(p):
         if p[1].upper() == 'DESCRIPTION':
             p[0]['description'] = p[3]
             
-def coll_param_list(p):
+def p_coll_param_list(p):
     """ coll_param_list : coll_param coll_param_list
                         | COMMA coll_param coll_param_list
                         | empty
@@ -271,7 +261,6 @@ def p_coll_param(p):
     """ coll_param : QSTRING ":" QSTRING
                    | QSTRING ":" NUMBER
     """
-    # 这个见README里建立Collection处的param_list
     p[0] = dict()
     if len(p) > 2:
         p[0][p[1]] = p[3]
@@ -452,7 +441,7 @@ def p_file_list(p):
         p[0] = [p[1]] + p[2]
     else:
         p[0] = [p[2]] + p[3]
-            
+        
 '''
 def p_expression(p):
     """ expression : dml END

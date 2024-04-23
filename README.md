@@ -64,6 +64,8 @@ DROP DATABASE {name}
 
 ```
 CREATE COLLECTION {coll_name} ({field_list}) with {param_list};
+# or
+CREATE COLLECTION {coll_name} ({field_list})
 ```
 
 参数解释如下：
