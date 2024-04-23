@@ -22,6 +22,7 @@ reserved = {
     'limit' : 'LIMIT',
     'bulk'  : 'BULK',
     'insert': 'INSERT',
+    'upsert': 'UPSERT',
     'into'  : 'INTO',
     'values': 'VALUES',
     'update': 'UPDATE',

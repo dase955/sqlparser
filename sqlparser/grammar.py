@@ -409,6 +409,10 @@ def p_drop_idx(p):
 ###################################################
 def p_insert(p):
     """ insert : bulk_insert
+               | insert_coll
+               | insert_part
+               | upsert_coll
+               | upsert_part
     """
     p[0] = p[1]
 
@@ -442,6 +446,56 @@ def p_file_list(p):
     else:
         p[0] = [p[2]] + p[3]
         
+def p_insert_coll(p):
+    """ insert_coll : INSERT INTO STRING "(" field_name_list ")" VALUES values_list
+    """
+    p[0] = dict()
+    p[0]['coll_name'] = p[3]
+    data = list()
+    for values in p[8]:
+        new_dict = dict()
+        for i in range(0, len(p[5])):
+            new_dict[p[5][i]] = values[i]
+    p[0]['data'] = data
+
+def p_insert_part(p):
+    """ insert_part : INSERT INTO PARTITION STRING ON STRING "(" field_name_list ")" VALUES values_list
+    """
+    p[0] = dict()
+    p[0]['part_name'] = p[4]
+    p[0]['coll_name'] = p[6]
+    data = list()
+    for values in p[11]:
+        new_dict = dict()
+        for i in range(0, len(p[8])):
+            new_dict[p[5][i]] = values[i]
+    p[0]['data'] = data
+
+def p_upsert_coll(p):
+    """ upsert_coll : UPSERT INTO STRING "(" field_name_list ")" VALUES values_list
+    """
+    p[0] = dict()
+    p[0]['coll_name'] = p[3]
+    data = list()
+    for values in p[8]:
+        new_dict = dict()
+        for i in range(0, len(p[5])):
+            new_dict[p[5][i]] = values[i]
+    p[0]['data'] = data
+
+def p_upsert_part(p):
+    """ upsert_part : UPSERT INTO PARTITION STRING ON STRING "(" field_name_list ")" VALUES values_list
+    """
+    p[0] = dict()
+    p[0]['part_name'] = p[4]
+    p[0]['coll_name'] = p[6]
+    data = list()
+    for values in p[11]:
+        new_dict = dict()
+        for i in range(0, len(p[8])):
+            new_dict[p[5][i]] = values[i]
+    p[0]['data'] = data
+
 '''
 def p_expression(p):
     """ expression : dml END
