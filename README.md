@@ -80,7 +80,6 @@ CREATE COLLECTION {coll_name} ({field_list}) with {param_list};
 
    - shards_num：取值为1到16里的整数
 
-
 #### 重命名一个Collection
 
 可以用于将一个collection移动到另一个database，或用于重命名。
@@ -336,7 +335,7 @@ SHOW INDEXES ON {coll_name};
 
 ### 对一个Collection的数据的管理
 
-#### 批量插入数据到这个Collection的一个分区
+#### 从文件中插入数据到这个Collection的一个分区
 
 ```
 BULK INSERT PARTITION {part_name} ON {coll_name} FROM {file_list};
@@ -351,7 +350,7 @@ BULK INSERT PARTITION {part_name} ON {coll_name} FROM {file_list};
 
  - file_list：file的列表，file是外部Json文件的命名，其值为字符串，需包含在一对单/双引号里
 
-#### 批量插入数据到这个Collection
+#### 从文件中插入数据到这个Collection
 
 ```
 BULK INSERT COLLECTION {coll_name} FROM {file_list};
@@ -363,3 +362,45 @@ BULK INSERT COLLECTION {coll_name} FROM {file_list};
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
  - file_list：file的列表，file是外部Json文件的命名，其值为字符串，需包含在一对单/双引号里
+
+#### 插入数据到这个Collection
+
+```
+INSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_2}),...;
+# Example 1: INSERT INTO book(book_id, book_intro) VALUES (1, [1.0, 2.0]), (2, [3.0, 2.0]);
+# Example 2: INSERT INTO book(book_id, book_intro) VALUES (3, [1.0, 3.0]);
+```
+
+参数解释如下：
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - field_name_list：field命名的列表，其field命名取值类型为字符串，且不可包含单/双引号。需注意，如果启用dynamic_field，这里的field命名可以不存在Collection原来的fields里。启用dynamic_field插入的新的field只能为标量field，不可以为binary_vector和float_vector类型。
+
+ - value_list：value的列表，value的取值根据field的类型有所不同，举例见下。
+
+   - 
+
+#### 插入数据到这个Collection的一个分区
+
+```
+INSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_2}),...;
+# Example 1: INSERT INTO PARTITION part1 ON book(book_id, book_intro) VALUES (1, [1.0, 2.0]), (2, [3.0, 2.0]);
+# Example 2: INSERT INTO PARTITION part2 ON book(book_id, book_intro) VALUES (3, [1.0, 3.0]);
+```
+
+#### 插入更新数据到这个Collection
+
+```
+UPSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_2}),...;
+# Example 1: UPSERT INTO book(book_id, book_intro) VALUES (1, [1.0, 2.0]), (2, [3.0, 2.0]);
+# Example 2: UPSERT INTO book(book_id, book_intro) VALUES (3, [1.0, 3.0]);
+```
+
+#### 插入更新数据到这个Collection的一个分区
+
+```
+UPSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_2}),...;
+# Example 1: UPSERT INTO PARTITION part1 ON book(book_id, book_intro) VALUES (1, [1.0, 2.0]), (2, [3.0, 2.0]);
+# Example 2: UPSERT INTO PARTITION part2 ON book(book_id, book_intro) VALUES (3, [1.0, 3.0]);
+```
