@@ -1,1 +1,2 @@
 ply
+pymilvus==2.3.6

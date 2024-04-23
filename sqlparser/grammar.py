@@ -153,7 +153,7 @@ def p_compact_coll(p):
     }
     
 def p_create_coll(p):
-    """ create_coll : COLLECTION COLLECTION STRING "(" field_list ")" WITH "{" coll_param_list "}"
+    """ create_coll : CREATE COLLECTION STRING "(" field_list ")" WITH "{" coll_param_list "}"
     """
     # 注意细心检查是不是每个数据类型都可以建，每个数据类型下的参数(如primary key)是不是都可以设置，collection的各个参数是不是都可以设置。
     p[0] = {
@@ -222,7 +222,7 @@ def p_type(p):
         p[0]['max_capacity'] = p[7]
         p[0]['max_length'] = p[3]
 
-def attr_list(p): 
+def p_attr_list(p):
     """ attr_list : empty
                   | attr attr_list
     """
@@ -231,7 +231,7 @@ def attr_list(p):
     elif len(p) == 3:
         p[0] = p[1] | p[2]
         
-def attr(p): 
+def p_attr(p):
     """ attr : STRING STRING
              | STRING
              | STRING "(" QSTRING ")"
@@ -255,7 +255,7 @@ def attr(p):
         if p[1].upper() == 'DESCRIPTION':
             p[0]['description'] = p[3]
             
-def coll_param_list(p):
+def p_coll_param_list(p):
     """ coll_param_list : coll_param coll_param_list
                         | COMMA coll_param coll_param_list
                         | empty
