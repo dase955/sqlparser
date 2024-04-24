@@ -468,7 +468,7 @@ def p_insert_part(p):
     for values in p[11]:
         new_dict = dict()
         for i in range(0, len(p[8])):
-            new_dict[p[5][i]] = values[i]
+            new_dict[p[8][i]] = values[i]
     p[0]['data'] = data
 
 def p_upsert_coll(p):
@@ -493,8 +493,53 @@ def p_upsert_part(p):
     for values in p[11]:
         new_dict = dict()
         for i in range(0, len(p[8])):
-            new_dict[p[5][i]] = values[i]
+            new_dict[p[8][i]] = values[i]
     p[0]['data'] = data
+
+def p_field_name_list(p):
+    """ field_name_list : field_name field_name_list
+                        | COMMA field_name field_name_list
+                        | empty
+    """
+    p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
+    
+def p_field_name(p):
+    """ field_name : STRING
+    """
+    p[0] = [ p[1] ]
+    
+def p_values_list(p):
+    """ values_list : value_tuple values_list
+                    | COMMA value_tuple values_list
+                    | empty
+    """
+    p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
+        
+def p_value_tuple(p):
+    """ value_tuple : "(" value_list ")"
+    """
+    p[0] = p[2]
+    
+def p_value_list(p):
+    """ value_list : value value_list
+                   | COMMA value value_list
+                   | empty
+    """
+    p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
+        
+def p_value_
 
 '''
 def p_expression(p):
