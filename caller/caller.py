@@ -31,5 +31,7 @@ func_map = {
     'show_idx' : show_idx,
     'drop_idx' : drop_idx,
     'bulk_insert' : bulk_insert,
-    'create_coll' : create_coll
+    'create_coll' : create_coll,
+    'insert' : insert,
+    'upsert' : upsert
 }

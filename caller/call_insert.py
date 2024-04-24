@@ -26,3 +26,59 @@ def bulk_insert(query):
     else:
         for file in files:
             utility.do_bulk_insert(collection_name=collection_name, files=[file], partition_name=partition_name, using=using)
+            
+def insert(query):
+    configur = ConfigParser() 
+    configur.read('config.ini')
+
+    # using is connection alias
+    section = 'Connection'
+    using = configur.get(section, 'alias')
+
+    timeout = None
+    section = 'Insert'
+    if 'timeout' in configur[section]:
+        timeout = configur.getfloat(section, 'timeout')
+
+    count = None
+    collection_name = query['coll_name']
+    partition_name = None
+    data = query['data']
+    if 'part_name' in query:
+        partition_name = query['part_name']
+    collection = Collection(name=collection_name, using=using)
+        
+    if timeout is None:
+        count = collection.insert(data=data, partition_name=partition_name).insert_count
+    else:
+        count = collection.insert(data=data, partition_name=partition_name, timeout=timeout).insert_count
+    collection.flush()
+    print('insert ' + count + ' rows')
+
+def upsert(query):
+    configur = ConfigParser() 
+    configur.read('config.ini')
+
+    # using is connection alias
+    section = 'Connection'
+    using = configur.get(section, 'alias')
+
+    timeout = None
+    section = 'Insert'
+    if 'timeout' in configur[section]:
+        timeout = configur.getfloat(section, 'timeout')
+
+    count = None
+    collection_name = query['coll_name']
+    partition_name = None
+    data = query['data']
+    if 'part_name' in query:
+        partition_name = query['part_name']
+    collection = Collection(name=collection_name, using=using)
+        
+    if timeout is None:
+        count = collection.upsert(data=data, partition_name=partition_name).insert_count
+    else:
+        count = collection.upsert(data=data, partition_name=partition_name, timeout=timeout).insert_count
+    collection.flush()
+    print('upsert ' + count + ' rows')

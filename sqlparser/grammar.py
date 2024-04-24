@@ -450,6 +450,7 @@ def p_insert_coll(p):
     """ insert_coll : INSERT INTO STRING "(" field_name_list ")" VALUES values_list
     """
     p[0] = dict()
+    p[0]['type'] = 'insert'
     p[0]['coll_name'] = p[3]
     data = list()
     for values in p[8]:
@@ -462,6 +463,7 @@ def p_insert_part(p):
     """ insert_part : INSERT INTO PARTITION STRING ON STRING "(" field_name_list ")" VALUES values_list
     """
     p[0] = dict()
+    p[0]['type'] = 'insert'
     p[0]['part_name'] = p[4]
     p[0]['coll_name'] = p[6]
     data = list()
@@ -475,6 +477,7 @@ def p_upsert_coll(p):
     """ upsert_coll : UPSERT INTO STRING "(" field_name_list ")" VALUES values_list
     """
     p[0] = dict()
+    p[0]['type'] = 'upsert'
     p[0]['coll_name'] = p[3]
     data = list()
     for values in p[8]:
@@ -487,6 +490,7 @@ def p_upsert_part(p):
     """ upsert_part : UPSERT INTO PARTITION STRING ON STRING "(" field_name_list ")" VALUES values_list
     """
     p[0] = dict()
+    p[0]['type'] = 'upsert'
     p[0]['part_name'] = p[4]
     p[0]['coll_name'] = p[6]
     data = list()
