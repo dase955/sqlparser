@@ -526,7 +526,7 @@ def p_values_list(p):
 def p_value_tuple(p):
     """ value_tuple : "(" value_list ")"
     """
-    p[0] = p[2]
+    p[0] = [ p[2] ]
     
 def p_value_list(p):
     """ value_list : value value_list
@@ -539,8 +539,33 @@ def p_value_list(p):
     elif len(p) == 4:
         p[0] = p[2] + p[3]
         
-def p_value_
+def p_value(p):
+    """ value : single_value
+              | "[" multi_value "]"
+    """
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 4:
+        p[0] = [ p[2] ]
+    
+def p_single_value(p):
+    """ single_value : NUMBER
+                     | FLOAT
+                     | QSTRING
+    """
+    p[0] = [ p[1] ]
 
+def p_multi_value(p):
+    """ multi_value : single_value multi_value
+                    | COMMA single_value multi_value
+                    | empty
+    """
+    p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
+    
 '''
 def p_expression(p):
     """ expression : dml END

@@ -75,9 +75,7 @@ reserved = {
     'avg'   : 'AVG',
     'min'   : 'MIN',
     'max'   : 'MAX',
-    'bool'  : 'BOOL',
-    'true'  : 'TRUE',
-    'false' : 'FALSE'
+    'bool'  : 'BOOL'
 }
 
 tokens = (
@@ -108,7 +106,7 @@ def t_QSTRING(t):
     return t
 
 def t_NUMBER(t):
-    r"-?\d+?"
+    r"(0|-?[1-9]\d*)"
     t.value = int(t.value)
     return t
 

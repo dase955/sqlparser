@@ -381,7 +381,7 @@ INSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
  - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - BOOL：TRUE/FALSE
+   - BOOL：1/0，1表示True，0表示False
 
    - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
 
@@ -389,7 +389,7 @@ INSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
    - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
 
-   - ARRAY：由element type决定，比如BOOL ARRAY可以为[TRUE, FALSE, ...]，统一的格式为[item1, item2, ...]
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
 
    - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
 
@@ -415,7 +415,7 @@ INSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
  - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - BOOL：TRUE/FALSE
+   - BOOL：1/0，1表示True，0表示False
 
    - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
 
@@ -423,7 +423,7 @@ INSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
    - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
 
-   - ARRAY：由element type决定，比如BOOL ARRAY可以为[TRUE, FALSE, ...]，统一的格式为[item1, item2, ...]
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
 
    - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
 
@@ -447,7 +447,7 @@ UPSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
  - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - BOOL：TRUE/FALSE
+   - BOOL：1/0，1表示True，0表示False
 
    - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
 
@@ -455,7 +455,7 @@ UPSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
    - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
 
-   - ARRAY：由element type决定，比如BOOL ARRAY可以为[TRUE, FALSE, ...]，统一的格式为[item1, item2, ...]
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
 
    - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
 
@@ -481,7 +481,7 @@ UPSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
  - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - BOOL：TRUE/FALSE
+   - BOOL：1/0，1表示True，0表示False
 
    - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
 
@@ -489,7 +489,7 @@ UPSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
    - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
 
-   - ARRAY：由element type决定，比如BOOL ARRAY可以为[TRUE, FALSE, ...]，统一的格式为[item1, item2, ...]
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
 
    - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
 
