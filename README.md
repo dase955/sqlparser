@@ -496,3 +496,39 @@ UPSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
    - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
 
    - JSON：不支持JSON类型，可以使用bulk insert来插入
+
+#### 删除一个Collection的数据
+
+```
+DELETE FROM {coll_name} WHERE {conditions}
+# or
+DELETE FROM {coll_name} WITH {'expr':'...'}
+# Example: DELETE FROM book WITH {'expr':'book_id < 10 and book_id > 5'}
+```
+
+参数解释如下：
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+
+ - expr：这里的expr与Milvus文档里的expr的格式相同，与conditions只能二选一
+
+#### 删除一个Collection的一个分区里的数据
+
+```
+DELETE FROM PARTITION {part_name} ON {coll_name} WHERE {conditions}
+# or
+DELETE FROM {coll_name} WITH {'expr':'...'}
+# Example: DELETE FROM book WITH {'expr':'book_id < 10 and book_id > 5'}
+```
+
+参数解释如下：
+
+ - part_name：操作的分区的命名，取值类型为字符串，且不可包含单/双引号
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+
+ - expr：这里的expr与Milvus文档里的expr的格式相同，与conditions只能二选一
