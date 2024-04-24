@@ -80,7 +80,9 @@ CREATE COLLECTION {coll_name} ({field_list})
 
    - enable_dynamic_field：可取1或0，1代表True, 0代表False
 
-   - shards_num：取值为1到16里的整数
+   - num_shards：取值为1到16里的整数
+
+   - num_partitions：取值为1到4096里的整数
 
 #### 重命名一个Collection
 

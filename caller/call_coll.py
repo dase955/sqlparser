@@ -214,10 +214,13 @@ def create_coll(query):
                               enable_dynamic_field=query['params'].get('enable_dynamic_field', 0)) # 0->False, 1->True
     if timeout is None:
         collection = Collection(name=collection_name, schema=schema, using=using, 
-                                num_shards=query['params'].get('num_shards', 1))
+                                num_shards=query['params'].get('num_shards', 1), 
+                                num_partitions=query['params'].get('num_partitions', 1))
     else:
         collection = Collection(name=collection_name, schema=schema, using=using, 
-                                num_shards=query['params'].get('num_shards', 1), timeout=timeout)
+                                num_shards=query['params'].get('num_shards', 1), 
+                                num_partitions=query['params'].get('num_partitions', 1),
+                                timeout=timeout)
         
     # 检查时可以用CollectionSchema下的to_dict方法、Collection的num_shards方法和FieldSchema的to_dict方法
     # 记得更新下READMD里Create Collection
