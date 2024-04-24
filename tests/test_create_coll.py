@@ -80,24 +80,145 @@ class TestCollection(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_simple(self):
-        result = parse("select * from blog;")
-        print(result)
-
     def test_int8_pk(self):
-        # sql_param_list_expr = '{ "description": "test desc", "enable_dynamic_field": 1, "shards_num": 2 }'
-        sql_param_list_expr = '{  "shards_num": 2 }'
-        # sql_field_list_expr = '(field_1 INT8 primary key auto id description "field_1 desc")'
+        """
+        primary key must be int64 or varchar, and int8 should fail
+        """
+        sql_param_list_expr = '{  "num_shards": 2 }'
         sql_field_list_expr = '(field_1 INT8 primary key )'
-        # sql_field_list_expr = '(field_1 INT8 )'
         sql_expr = f'create collection {TEST_COLLECTION_NAME} {sql_field_list_expr} WITH {sql_param_list_expr};'
         print(f"executing sql: {sql_expr}")
 
         parsed_data = parse(sql_expr)
+        print(f'parsed data: {parsed_data}')
+
+        with self.assertRaises(pymilvus.exceptions.PrimaryKeyException) as cm:
+            CREATE_COLLECTION_FUNC(parsed_data)
+
+    def test_int64_pk_no_vector(self):
+        """
+        valid primary key, but no vector field is defined, should fail
+        """
+        sql_param_list_expr = '{ "description": "test desc", "enable_dynamic_field": 1 }'
+        sql_field_list_expr = '(field_1 INT64 primary key auto id description ("field_1"))'
+        sql_expr = f'create collection {TEST_COLLECTION_NAME} {sql_field_list_expr} WITH {sql_param_list_expr};'
+        print(f"executing sql: {sql_expr}")
+
+        parsed_data = parse(sql_expr)
+        print(f'parsed data: {parsed_data}')
+
+        with self.assertRaises(pymilvus.exceptions.SchemaNotReadyException) as cm:
+            CREATE_COLLECTION_FUNC(parsed_data)
+
+    def test_int64_pk_with_vector_scalar_partition(self):
+        """
+        valid primary key(INT64), vector field(FLOAT VECTOR), scalar field(INT8)
+        """
+        sql_param_list_expr = '{ "description": "test desc", "enable_dynamic_field": 1, "num_shards": 2 }'
+        sql_field_list_expr = ('('
+                               'field_1 INT64 primary key auto id description ("field_1"),'
+                               'field_2 FLOAT VECTOR(2) description ("field_2"),'
+                               'field_3 INT8 description ("field_3"),'
+                               'field_4 INT64 pArtItIOn kEY'
+                               ')')
+        sql_expr = f'create collection {TEST_COLLECTION_NAME} {sql_field_list_expr} WITH {sql_param_list_expr};'
+        print(f"executing sql: {sql_expr}")
+
+        parsed_data = parse(sql_expr)
+        print(f'parsed data: {parsed_data}')
+
         CREATE_COLLECTION_FUNC(parsed_data)
 
-        self.assertTrue(pymilvus.utility.has_collection(TEST_COLLECTION_NAME, using=self.using, timeout=self.timeout),
-                        msg="Failed to create collection.")
-
+        pymilvus.utility.has_collection(TEST_COLLECTION_NAME, using=self.using, timeout=self.timeout)
         collection = pymilvus.Collection(TEST_COLLECTION_NAME)
+
+        # expected values
+        expected_schema = {
+            'auto_id': True,
+            'description': 'test desc',
+            'enable_dynamic_field': True,
+            'fields': [
+                {'name': 'field_1', 'description': 'field_1', 'type': pymilvus.DataType.INT64, 'is_primary': True,
+                 'auto_id': True},
+                {'name': 'field_2', 'description': 'field_2', 'type': pymilvus.DataType.FLOAT_VECTOR,
+                 'params': {'dim': 2}},
+                {'name': 'field_3', 'description': 'field_3', 'type': pymilvus.DataType.INT8},
+                {'name': 'field_4', 'description': '', 'type': pymilvus.DataType.INT64, 'is_partition_key': True}
+            ]
+        }
+        expected_num_shards = 2
+        expected_name = TEST_COLLECTION_NAME
+
         print(collection)
+        self.assertDictEqual(collection.schema.to_dict(), expected_schema,
+                             "Collection is created, but its schema does not meet expectations.")
+        self.assertEqual(collection.num_shards, expected_num_shards,
+                         "Collection is created, but its shards num does not meet expectations.")
+        self.assertEqual(collection.name, expected_name,
+                         "Collection is created, but its name does not meet expectations.")
+
+    def test_int64_pk_field(self):
+        """
+        valid primary key(INT64), vector field(FLOAT VECTOR)
+        """
+        sql_param_list_expr = ('{'
+                               ' "description": "test desc", '
+                               ' "enable_dynamic_field": 1, '
+                               ' "num_shards": 2, '
+                               ' "primary_field": "field_1" '
+                               '}')
+        sql_field_list_expr = ('('
+                               'field_1 INT64 description ("field_1"),'
+                               'field_2 FLOAT VECTOR(2) description ("field_2")'
+                               ')')
+        sql_expr = f'create collection {TEST_COLLECTION_NAME} {sql_field_list_expr} WITH {sql_param_list_expr};'
+        print(f"executing sql: {sql_expr}")
+
+        parsed_data = parse(sql_expr)
+        print(f'parsed data: {parsed_data}')
+
+        CREATE_COLLECTION_FUNC(parsed_data)
+
+        pymilvus.utility.has_collection(TEST_COLLECTION_NAME, using=self.using, timeout=self.timeout)
+        collection = pymilvus.Collection(TEST_COLLECTION_NAME)
+
+        # expected values
+        expected_schema = {
+            'auto_id': False,
+            'description': 'test desc',
+            'enable_dynamic_field': True,
+            'fields': [
+                {'name': 'field_1', 'description': 'field_1', 'type': pymilvus.DataType.INT64, 'is_primary': True,
+                 'auto_id': False},
+                {'name': 'field_2', 'description': 'field_2', 'type': pymilvus.DataType.FLOAT_VECTOR,
+                 'params': {'dim': 2}},
+            ]
+        }
+        expected_num_shards = 2
+        expected_name = TEST_COLLECTION_NAME
+
+        print(collection)
+        self.assertDictEqual(collection.schema.to_dict(), expected_schema,
+                             "Collection is created, but its schema does not meet expectations.")
+        self.assertEqual(collection.num_shards, expected_num_shards,
+                         "Collection is created, but its shards num does not meet expectations.")
+        self.assertEqual(collection.name, expected_name,
+                         "Collection is created, but its name does not meet expectations.")
+
+    def test_varchar(self):
+        """
+        valid primary key(INT64), vector field(FLOAT VECTOR), varchar field
+        """
+        sql_param_list_expr = '{  "num_shards": 2 }'
+        sql_field_list_expr = ('('
+                               'field_1 INT64 primary key,'
+                               'field_2 float vector(4),'
+                               'field_3 varchar(20)'
+                               ')')
+        sql_expr = f'create collection {TEST_COLLECTION_NAME} {sql_field_list_expr} WITH {sql_param_list_expr};'
+        print(f"executing sql: {sql_expr}")
+
+        parsed_data = parse(sql_expr)
+        print(f'parsed data: {parsed_data}')
+
+        CREATE_COLLECTION_FUNC(parsed_data)

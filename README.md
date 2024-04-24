@@ -80,7 +80,11 @@ CREATE COLLECTION {coll_name} ({field_list})
 
    - enable_dynamic_field：可取1或0，1代表True, 0代表False
 
-   - shards_num：取值为1到16里的整数
+   - num_shards：取值为1到16里的整数
+   
+   - primary_field: 主键名称
+
+   - partition_key_field: 分区键名称
 
 #### 重命名一个Collection
 
