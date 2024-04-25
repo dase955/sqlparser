@@ -5,6 +5,7 @@ from caller.call_alias import *
 from caller.call_part import *
 from caller.call_idx import *
 from caller.call_insert import *
+from caller.call_delete import *
 
 func_map = {
     'connect' : connect,
@@ -31,5 +32,8 @@ func_map = {
     'show_idx' : show_idx,
     'drop_idx' : drop_idx,
     'bulk_insert' : bulk_insert,
-    'create_coll' : create_coll
+    'create_coll' : create_coll,
+    'insert' : insert,
+    'upsert' : upsert,
+    'delete' : delete
 }

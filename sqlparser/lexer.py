@@ -22,6 +22,7 @@ reserved = {
     'limit' : 'LIMIT',
     'bulk'  : 'BULK',
     'insert': 'INSERT',
+    'upsert': 'UPSERT',
     'into'  : 'INTO',
     'values': 'VALUES',
     'update': 'UPDATE',
@@ -73,10 +74,7 @@ reserved = {
     'sum'   : 'SUM',
     'avg'   : 'AVG',
     'min'   : 'MIN',
-    'max'   : 'MAX',
-    # 'bool'  : 'BOOL',
-    'true'  : 'TRUE',
-    'false' : 'FALSE'
+    'max'   : 'MAX'
 }
 
 tokens = (
@@ -84,6 +82,7 @@ tokens = (
     'STRING',
     'NUMBER',
     'QSTRING',
+    'FLOAT',
     'END',
     'COMMA',
 ) + tuple(set(reserved.values()))
@@ -106,14 +105,14 @@ def t_QSTRING(t):
     t.value = t.value[1:-1]
     return t
 
-def t_NUMBER(t):
-    r"(0|-?[1-9]\d*)"
-    t.value = int(t.value)
-    return t
-
 def t_FLOAT(t):
     r"(-?\d+)(\.\d+)?"
     t.value = float(t.value)
+    return t
+
+def t_NUMBER(t):
+    r"(0|-?[1-9]\d*)"
+    t.value = int(t.value)
     return t
 
 def t_error(t):

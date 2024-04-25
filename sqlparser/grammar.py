@@ -11,6 +11,7 @@ def p_expression(p):
                    | part END
                    | idx END
                    | insert END
+                   | delete END
     """
     p[0] = p[1]
 
@@ -406,6 +407,10 @@ def p_drop_idx(p):
 ###################################################
 def p_insert(p):
     """ insert : bulk_insert
+               | insert_coll
+               | insert_part
+               | upsert_coll
+               | upsert_part
     """
     p[0] = p[1]
 
@@ -439,466 +444,163 @@ def p_file_list(p):
     else:
         p[0] = [p[2]] + p[3]
         
-'''
-def p_expression(p):
-    """ expression : dml END
-                   | ddl END
+def p_insert_coll(p):
+    """ insert_coll : INSERT INTO STRING "(" field_name_list ")" VALUES values_list
     """
-    p[0] = p[1]
+    p[0] = dict()
+    p[0]['type'] = 'insert'
+    p[0]['coll_name'] = p[3]
+    data = list()
+    for values in p[8]:
+        new_dict = dict()
+        for i in range(0, len(p[5])):
+            new_dict[p[5][i]] = values[i]
+    p[0]['data'] = data
 
-def p_dml(p):
-    """ dml : select
-            | update
-            | insert
-            | delete
+def p_insert_part(p):
+    """ insert_part : INSERT INTO PARTITION STRING ON STRING "(" field_name_list ")" VALUES values_list
     """
-    p[0] = p[1]
+    p[0] = dict()
+    p[0]['type'] = 'insert'
+    p[0]['part_name'] = p[4]
+    p[0]['coll_name'] = p[6]
+    data = list()
+    for values in p[11]:
+        new_dict = dict()
+        for i in range(0, len(p[8])):
+            new_dict[p[8][i]] = values[i]
+    p[0]['data'] = data
 
-
-def p_ddl(p):
-    """ ddl : create
-            | alter
-            | drop
+def p_upsert_coll(p):
+    """ upsert_coll : UPSERT INTO STRING "(" field_name_list ")" VALUES values_list
     """
-    p[0] = p[1]
+    p[0] = dict()
+    p[0]['type'] = 'upsert'
+    p[0]['coll_name'] = p[3]
+    data = list()
+    for values in p[8]:
+        new_dict = dict()
+        for i in range(0, len(p[5])):
+            new_dict[p[5][i]] = values[i]
+    p[0]['data'] = data
 
-###################################################
-############         select            ############
-###################################################
-def p_select(p):
-    """ select : SELECT columns FROM table join where group_by having order_by limit
+def p_upsert_part(p):
+    """ upsert_part : UPSERT INTO PARTITION STRING ON STRING "(" field_name_list ")" VALUES values_list
     """
-    p[0] = {
-        'type'  : p[1],
-        'column': p[2],
-        'table' : p[4],
-        'join'  : p[5],
-        'where' : p[6],
-        'group' : p[7],
-        'having': p[8],
-        'order' : p[9],
-        'limit' : p[10]
-    }
+    p[0] = dict()
+    p[0]['type'] = 'upsert'
+    p[0]['part_name'] = p[4]
+    p[0]['coll_name'] = p[6]
+    data = list()
+    for values in p[11]:
+        new_dict = dict()
+        for i in range(0, len(p[8])):
+            new_dict[p[8][i]] = values[i]
+    p[0]['data'] = data
 
-def p_table(p):
-    """ table : table COMMA table
-              | STRING AS STRING
-              | STRING STRING
-              | STRING
+def p_field_name_list(p):
+    """ field_name_list : field_name field_name_list
+                        | COMMA field_name field_name_list
+                        | empty
     """
-    if ',' in p:
-        p[0] = p[1] + p[3]
-    else:
-        if len(p) == 2:
-            p[0] = [{'name':p[1]}]
-        if len(p) == 3:
-            p[0] = [{'name':p[1],'alias':p[2]}]
-        if len(p) == 4:
-            p[0] = [{'name':p[1],'alias':p[3]}]
-
-
-def p_join(p):
-    """ join : INNER JOIN table on join
-             | LEFT JOIN table on join
-             | RIGHT JOIN table on join
-             | FULL JOIN table on join
-             | JOIN table on join
-             | empty
+    p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
+    
+def p_field_name(p):
+    """ field_name : STRING
     """
-    p[0] = []
-    if len(p) == 5:
-        p[0] = [{'type':'INNER','table':p[2],'on':p[3]}]+p[4]
-    if len(p) == 6:
-        p[0] = [{'type':p[1],'table':p[3],'on':p[4]}]+p[5]
-
-def p_on(p):
-    """ on : ON item COMPARISON item
+    p[0] = [ p[1] ]
+    
+def p_values_list(p):
+    """ values_list : value_tuple values_list
+                    | COMMA value_tuple values_list
+                    | empty
     """
-    p[0] = [p[2],p[4]]
-
-def p_where(p):
-    """ where : WHERE conditions
-              | empty
+    p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
+        
+def p_value_tuple(p):
+    """ value_tuple : "(" value_list ")"
     """
-    p[0] = []
-    if len(p) > 2:
-        p[0] = p[2]
-
-def p_group_by(p):
-    """ group_by : GROUP BY strings
-                 | empty
-    """
-    p[0] = []
-    if len(p) > 2:
-        p[0] = p[3]
-
-def p_having(p):
-    """ having : HAVING conditions
-               | empty
-    """
-    p[0] = []
-    if len(p) > 2:
-        p[0] = p[2]
-
-def p_order_by(p):
-    """ order_by : ORDER BY order
-                 | empty
-    """
-    p[0] = []
-    if len(p) > 2:
-        p[0] = p[3]
-
-
-def p_limit(p):
-    """ limit : LIMIT numbers
-              | empty
-    """
-    p[0] = []
-    if len(p) > 2:
-        if len(p[2]) == 1:
-            p[2] = [0] + p[2]
-        p[0] = p[2]
-
-def p_order(p):
-    """ order : order COMMA order
-              | string order_type
-    """
-    if len(p) > 3:
-        p[0] = p[1] + p[3]
-    else:
-        p[0] = [{'name': p[1],'type': p[2]}]
-
-def p_order_type(p):
-    """ order_type : ASC
-                   | DESC
+    p[0] = [ p[2] ]
+    
+def p_value_list(p):
+    """ value_list : value value_list
+                   | COMMA value value_list
                    | empty
     """
-    if p[1] == 'DESC':
-        p[0] = 'DESC'
-    else:
-        p[0] = 'ASC'
-
-
-###################################################
-############         update            ############
-###################################################
-def p_update(p):
-    """ update : UPDATE table SET set where
-    """
-    p[0] = {
-        'type'  : p[1],
-        'table': p[2],
-        'column'  : p[4],
-        'where' : p[5]
-    }
-
-def p_set(p):
-    """ set : set COMMA set
-            | item COMPARISON item
-    """
-    if '=' in p:
-        p[0] = [{'name':p[1],'value':p[3]}]
-    else:
-        p[0] = p[1] + p[3]
-
-###################################################
-############         insert            ############
-###################################################
-def p_insert(p):
-    """ insert : INSERT into table insert_columns VALUES values
-    """
-    p[0] = {
-        'type': p[1],
-        'table': p[3],
-        'columns': p[4],
-        'values': p[6]
-    }
-
-def p_into(p):
-    """ into : INTO
-             | empty
-    """
-    pass
-
-def p_insert_columns(p):
-    """ insert_columns : "(" columns ")"
-                       | empty
-    """
-    p[0] = []
-    if len(p) > 2:
-        p[0] = p[2]
-
+    p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
+        
 def p_value(p):
-    """ value : value COMMA value
-              | string
-              | NUMBER
+    """ value : single_value
+              | "[" multi_value "]"
     """
-    if len(p) > 2:
-        p[0] = p[1] + p[3]
-    else:
-        p[0] = [p[1]]
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 4:
+        p[0] = [ p[2] ]
+    
+def p_single_value(p):
+    """ single_value : NUMBER
+                     | FLOAT
+                     | QSTRING
+    """
+    p[0] = [ p[1] ]
 
-def p_values(p):
-    """ values : values COMMA values
-               | "(" value ")"
+def p_multi_value(p):
+    """ multi_value : single_value multi_value
+                    | COMMA single_value multi_value
+                    | empty
     """
-    if ',' in p:
-        p[0] = p[1] + p[3]
-    else:
-        p[0] = [p[2]]
+    p[0] = list()
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
+    elif len(p) == 4:
+        p[0] = p[2] + p[3]
 
 ###################################################
-############         delete            ############
+############         Delete          ############
 ###################################################
 def p_delete(p):
-    """ delete : DELETE FROM table where
-    """
-    p[0] = {
-        'type': p[1],
-        'table': p[3],
-        'where': p[4]
-    }
-
-###################################################
-############         create            ############
-###################################################
-def p_create(p):
-    """ create : CREATE TABLE string "(" create_columns ")"
-    """
-    p[0] = {
-        'type': p[1],
-        'table': p[3],
-        'columns': p[5]
-    }
-
-
-def p_create_columns(p):
-    """ create_columns : create_columns COMMA create_columns
-                       | string datatype
-    """
-    if len(p) > 3:
-        p[0] = p[1] + p[3]
-    else:
-        p[0] = [{'name':p[1],'type':p[2]}]
-
-def p_datatype(p):
-    """ datatype : INT
-                 | INTEGER
-                 | TINYINT
-                 | SMALLINT
-                 | MEDIUMINT
-                 | BIGINT
-                 | FLOAT
-                 | DOUBLE
-                 | DECIMAL
-                 | CHAR "(" NUMBER ")"
-                 | VARCHAR "(" NUMBER ")"
-    """
-    if len(p) > 2:
-        p[0] = '%s(%s)'%(p[1],p[3])
-    else:
-        p[0] = p[1]
-
-###################################################
-############         alter              ###########
-###################################################
-def p_alter(p):
-    """ alter : ALTER TABLE string change_column
-    """
-    p[0] = {
-        'type': p[1],
-        'table': p[3],
-        'columns': p[4]
-    }
-
-def p_change_column(p):
-    """ change_column : ADD string datatype
-                      | DROP COLUMN string
-                      | ALTER COLUMN string datatype
-    """
-    if p[1] == 'ADD':
-        p[0] = {'ADD':{'name':p[2],'type':p[3]}}
-    if p[1] == 'DROP':
-        p[0] = {'DROP': {'name': p[2]}}
-    if p[1] == 'ALTER':
-        p[0] = {'ALTER': {'name': p[3],'type':p[4]}}
-
-###################################################
-############         drop              ############
-###################################################
-def p_drop(p):
-    """ drop : DROP TABLE string
-    """
-    p[0] = {
-        'type': p[1],
-        'table': p[3]
-    }
-
-###################################################
-############         column            ############
-###################################################
-# p[0] => [x,x..] | [x]
-def p_columns(p):
-    """ columns : columns COMMA columns
-                | column_as
-                | column
-    """
-
-    if len(p) > 2:
-        p[0] = p[1] + p[3]
-    else:
-        p[0] = [p[1]]
-
-def p_column_as(p):
-    """ column_as : column AS item
-                  | column item
-    """
-    p[0] = p[1]
-    if len(p) > 3:
-        p[0]['alias'] = p[3]
-    else:
-        p[0]['alias'] = p[2]
-
-def p_column(p):
-    """ column : function "(" distinct_item ")"
-               | function "(" item ")"
-               | distinct_item
-               | item
-    """
-    if len(p) > 2:
-        p[0] = {'name': {p[1]:p[3]}}
-    else:
-        p[0] = {'name':p[1]}
-
-def p_distinct_item(p):
-    """ distinct_item : DISTINCT item
-                      | DISTINCT "(" item ")"
-    """
-    if len(p) > 3:
-        p[0] = {p[1]:p[3]}
-    else:
-        p[0] = {p[1]:p[2]}
-
-def p_function(p):
-    """ function : COUNT
-                 | SUM
-                 | AVG
-                 | MIN
-                 | MAX
+    """ delete : delete_coll
+               | delete_part
     """
     p[0] = p[1]
 
-def p_item(p):
-    """ item : string
-             | NUMBER
-             | "*"
-             | string "." item
+def p_delete_coll(p):
+    """ delete_coll : DELETE FROM STRING WHERE conditions
+                    | DELETE FROM STRING WITH "{" QSTRING ":" QSTRING "}"
     """
-    if len(p)>2:
-        p[0] = p[1]+'.'+p[3]
-    else:
-        p[0] = p[1]
-
-
-# p[0] => [1,2] | [1]
-def p_numbers(p):
-    """ numbers : numbers COMMA numbers
-                | NUMBER
-    """
-    if len(p) > 2:
-        p[0] = p[1] + p[3]
-    else:
-        p[0] = [p[1]]
-
-def p_strings(p):
-    """ strings : strings COMMA strings
-                | string
-    """
-    if len(p) > 2:
-        p[0] = p[1] + p[3]
-    else:
-        p[0] = [p[1]]
-
-def p_items(p):
-    """ items : strings
-              | numbers
-    """
-    p[0] = p[1]
-
-
-def p_string(p):
-    """ string : STRING
-               | QSTRING
-    """
-    p[0] = p[1]
-
-
-def p_conditions(p):
-    """ conditions : conditions AND conditions
-                   | conditions OR conditions
-                   | "(" conditions ")"
-                   | compare
-    """
-    if len(p) == 2:
-        p[0] = [p[1]]
-    else:
-        if '(' in p:
-            p[0] = [p[2]]
-        else:
-            p[0] = p[1] + [p[2]] + p[3]
-
-def p_compare(p):
-    """ compare : column COMPARISON item
-                | column like QSTRING
-                | column BETWEEN item AND item
-                | column IS null
-                | column in lritems
-    """
-    if len(p) == 4:
-        p[0] = {
-            'name' : p[1]['name'],
-            'value': p[3],
-            'compare' : p[2]
-        }
+    p[0] = dict()
+    p[0]['type'] = 'delete'
+    p[0]['coll_name'] = p[3]
     if len(p) == 6:
-        p[0] = {
-            'name': p[1]['name'],
-            'value': [p[3],p[5]],
-            'compare': p[2]
-        }
-
-def p_lritems(p):
-    """ lritems : "(" items ")"
+        p[0]['expr'] = p[5]
+    elif len(p) == 10:
+        p[0]['expr'] = p[8]
+        
+def p_delete_coll(p):
+    """ delete_coll : DELETE FROM PARTITION STRING ON STRING WHERE conditions
+                    | DELETE FROM PARTITION STRING ON STRING WITH "{" QSTRING ":" QSTRING "}"
     """
-    p[0] = p[2]
-
-def p_like(p):
-    """ like : LIKE
-             | NOT LIKE
-    """
-    if len(p) == 2:
-        p[0] = 'LIKE'
-    else:
-        p[0] = 'NOT LIKE'
-
-def p_in(p):
-    """ in : IN
-           | NOT IN
-    """
-    if len(p) == 2:
-        p[0] = 'IN'
-    else:
-        p[0] = 'NOT IN'
-
-def p_null(p):
-    """ null : NULL
-             | NOT NULL
-    """
-    if len(p) == 2:
-        p[0] = 'NULL'
-    else:
-        p[0] = 'NOT NULL'
-'''
+    p[0] = dict()
+    p[0]['type'] = 'delete'
+    p[0]['part_name'] = p[4]
+    p[0]['coll_name'] = p[6]
+    if len(p) == 9:
+        p[0]['expr'] = p[8]
+    elif len(p) == 13:
+        p[0]['expr'] = p[11]
 
 # empty return None
 # so expression like (t : empty) => len(p)==2

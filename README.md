@@ -429,9 +429,23 @@ INSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
  - field_name_list：field命名的列表，其field命名取值类型为字符串，且不可包含单/双引号。需注意，如果启用dynamic_field，这里的field命名可以不存在Collection原来的fields里。启用dynamic_field插入的新的field只能为标量field，不可以为binary_vector和float_vector类型。
 
- - value_list：value的列表，value的取值根据field的类型有所不同，举例见下。
+ - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - 
+   - BOOL：1/0，1表示True，0表示False
+
+   - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
+
+   - FLOAT / DOUBLE：1.0，正负浮点数即可
+
+   - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
+
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
+
+   - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
+
+   - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
+
+   - JSON：不支持JSON类型，可以使用bulk insert来插入
 
 #### 插入数据到这个Collection的一个分区
 
@@ -441,6 +455,32 @@ INSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 # Example 2: INSERT INTO PARTITION part2 ON book(book_id, book_intro) VALUES (3, [1.0, 3.0]);
 ```
 
+参数解释如下：
+
+ - part_name：操作的分区的命名，取值类型为字符串，且不可包含单/双引号
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - field_name_list：field命名的列表，其field命名取值类型为字符串，且不可包含单/双引号。需注意，如果启用dynamic_field，这里的field命名可以不存在Collection原来的fields里。启用dynamic_field插入的新的field只能为标量field，不可以为binary_vector和float_vector类型。
+
+ - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
+
+   - BOOL：1/0，1表示True，0表示False
+
+   - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
+
+   - FLOAT / DOUBLE：1.0，正负浮点数即可
+
+   - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
+
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
+
+   - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
+
+   - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
+
+   - JSON：不支持JSON类型，可以使用bulk insert来插入
+
 #### 插入更新数据到这个Collection
 
 ```
@@ -449,6 +489,30 @@ UPSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 # Example 2: UPSERT INTO book(book_id, book_intro) VALUES (3, [1.0, 3.0]);
 ```
 
+参数解释如下：
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - field_name_list：field命名的列表，其field命名取值类型为字符串，且不可包含单/双引号。需注意，如果启用dynamic_field，这里的field命名可以不存在Collection原来的fields里。启用dynamic_field插入的新的field只能为标量field，不可以为binary_vector和float_vector类型。
+
+ - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
+
+   - BOOL：1/0，1表示True，0表示False
+
+   - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
+
+   - FLOAT / DOUBLE：1.0，正负浮点数即可
+
+   - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
+
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
+
+   - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
+
+   - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
+
+   - JSON：不支持JSON类型，可以使用bulk insert来插入
+
 #### 插入更新数据到这个Collection的一个分区
 
 ```
@@ -456,3 +520,65 @@ UPSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 # Example 1: UPSERT INTO PARTITION part1 ON book(book_id, book_intro) VALUES (1, [1.0, 2.0]), (2, [3.0, 2.0]);
 # Example 2: UPSERT INTO PARTITION part2 ON book(book_id, book_intro) VALUES (3, [1.0, 3.0]);
 ```
+
+参数解释如下：
+
+ - part_name：操作的分区的命名，取值类型为字符串，且不可包含单/双引号
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - field_name_list：field命名的列表，其field命名取值类型为字符串，且不可包含单/双引号。需注意，如果启用dynamic_field，这里的field命名可以不存在Collection原来的fields里。启用dynamic_field插入的新的field只能为标量field，不可以为binary_vector和float_vector类型。
+
+ - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
+
+   - BOOL：1/0，1表示True，0表示False
+
+   - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
+
+   - FLOAT / DOUBLE：1.0，正负浮点数即可
+
+   - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
+
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
+
+   - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
+
+   - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
+
+   - JSON：不支持JSON类型，可以使用bulk insert来插入
+
+#### 删除一个Collection的数据
+
+```
+DELETE FROM {coll_name} WHERE {conditions}
+# or
+DELETE FROM {coll_name} WITH {'expr':'...'}
+# Example: DELETE FROM book WITH {'expr':'book_id < 10 and book_id > 5'}
+```
+
+参数解释如下：
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+
+ - expr：这里的expr与Milvus文档里的expr的格式相同，与conditions只能二选一
+
+#### 删除一个Collection的一个分区里的数据
+
+```
+DELETE FROM PARTITION {part_name} ON {coll_name} WHERE {conditions}
+# or
+DELETE FROM {coll_name} WITH {'expr':'...'}
+# Example: DELETE FROM book WITH {'expr':'book_id < 10 and book_id > 5'}
+```
+
+参数解释如下：
+
+ - part_name：操作的分区的命名，取值类型为字符串，且不可包含单/双引号
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+
+ - expr：这里的expr与Milvus文档里的expr的格式相同，与conditions只能二选一
