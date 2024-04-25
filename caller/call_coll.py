@@ -195,12 +195,13 @@ def create_coll(query):
 
     # convert field dict to FieldSchema
     # pymilvus的construct_from_dict不能将vector的dim、array的max_capacity、varchar的max_length解析，这里分开处理
+    # is_dynamic 不能手动设置，必须由 milvus 自己生成
     fields = []
     for field_dict in field_dicts:
         if field_dict['type'] in (DataType.BINARY_VECTOR, DataType.FLOAT_VECTOR):
             fields.append(FieldSchema(name=field_dict['name'], dim=field_dict['dim'],
                                       dtype=field_dict['type'], description=field_dict.get('description', ''),
-                                      is_dynamic=field_dict.get('is_dynamic', False)))
+                                      ))
         elif field_dict['type'] is DataType.VARCHAR:
             fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'],
                                       max_length=field_dict['max_length'],
@@ -208,18 +209,18 @@ def create_coll(query):
                                       auto_id=field_dict.get('auto_id', False),
                                       is_primary=field_dict.get('is_primary', False),
                                       is_partition_key=field_dict.get('is_partition_key', False),
-                                      is_dynamic=field_dict.get('is_dynamic', False)))
+                                      ))
         elif field_dict['type'] is DataType.ARRAY and field_dict['element_type'] is not DataType.VARCHAR:
             fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'],
                                       max_capacity=field_dict['max_capacity'], element_type=field_dict['element_type'],
                                       description=field_dict.get('description', ''),
-                                      is_dynamic=field_dict.get('is_dynamic', False)))
+                                      ))
         elif field_dict['type'] is DataType.ARRAY and field_dict['element_type'] is DataType.VARCHAR:
             fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'],
                                       max_capacity=field_dict['max_capacity'], element_type=field_dict['element_type'],
                                       max_length=field_dict['max_length'],
                                       description=field_dict.get('description', ''),
-                                      is_dynamic=field_dict.get('is_dynamic', False)))
+                                      ))
         else:
             fields.append(FieldSchema.construct_from_dict(field_dict))
         # fields = [FieldSchema.construct_from_dict(field_dict) for field_dict in field_dicts]
@@ -234,4 +235,3 @@ def create_coll(query):
                             timeout=timeout)
 
     # 检查时可以用CollectionSchema下的to_dict方法、Collection的num_shards方法和FieldSchema的to_dict方法
-    # 记得更新下READMD里Create Collection

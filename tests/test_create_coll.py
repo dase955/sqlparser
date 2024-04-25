@@ -138,7 +138,7 @@ class TestCollection(unittest.TestCase):
                                'field_1 INT64 primary key auto id description ("field_1"),'
                                'field_2 FLOAT VECTOR(2) description ("field_2"),'
                                'field_3 INT8 description ("field_3"),'
-                               'field_4 BOOL pArtItIOn kEY'
+                               'field_4 INT64 pArtItIOn kEY'
                                ')')
         sql_expr = f'create collection {TEST_COLLECTION_NAME} {sql_field_list_expr} WITH {sql_param_list_expr};'
         print(f"executing sql: {sql_expr}")
