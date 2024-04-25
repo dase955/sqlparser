@@ -72,7 +72,44 @@ CREATE COLLECTION {coll_name} ({field_list})
 
  - coll_name：新的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - field_list：field的列表，TODO，需要更新
+ - field_list：field的列表，field之间用逗号分割，每个field格式如下：
+   
+   `{field_name} {field_type} {attr1} {attr2} ...`
+
+   - field_name: field的命名，取值类型为字符串，且不可包含单/双引号
+   - field_type: field的类型，其可取的值如下：
+     - `VARCHAR(长度)`, 长度取值为 $[1, 65535]$ 内的整数。
+     - `BOOL`
+     - `INT8`
+     - `INT16`
+     - `INT32`
+     - `INT64`
+     - `FLOAT`
+     - `DOUBLE`
+     - `JSON`
+     - `BINARY VECTOR(dim)`, dim取值为 $[1, 32768]$ 内的整数。
+     - `FLOAT VECTOR(dim)`, dim取值为 $[1, 32768]$ 内的整数。
+     - ARRAY: 数组，需要指定其元素类型，形式为 `{元素类型} ARRAY` ，有效元素类型包括：
+       - `INT8`
+       - `INT16`
+       - `INT32`
+       - `INT64`
+       - `VARCHAR(长度)`
+       - `BOOL`
+       - `FLOAT`
+       - `DOUBLE`
+       
+       例: `VARCHAR(32) ARRAY`，`INT32 ARRAY`。
+     
+     可作为主键或分区键的类型如下: 
+       - `INT64`
+       - `VARCHAR`
+   
+   - attr: field的属性，可取值如下:
+     - `primary key`: 主键
+     - `partition key`: 分区键
+     - `auto id`: 为主键自动分配id
+     - description: 格式为 `description("描述")` ，作为该 field 的描述
 
  - param_list：param的列表，param可取的项如下。
 
@@ -81,10 +118,19 @@ CREATE COLLECTION {coll_name} ({field_list})
    - enable_dynamic_field：可取1或0，1代表True, 0代表False
 
    - num_shards：取值为1到16里的整数
-   
+
+   - num_partitions: 取值为 $[1, 4096]$ 里的整数
+
    - primary_field: 主键名称
 
    - partition_key_field: 分区键名称
+
+ 例：` create collection TEST_COLLECTION (field_1 varchar(22222) auto id primary key description("field 1"),
+                                         field_2 binary vector(32) description("field 2"),
+                                         field_3 BOOL description("field 3"),
+                                         field_4 varchar(63333) array(1234) description("field 4"),
+                                         field_5 int64 partition key description("field 5"))
+                with {'num_shards': 2}; `
 
 #### 重命名一个Collection
 

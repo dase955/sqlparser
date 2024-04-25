@@ -1,6 +1,7 @@
 from pymilvus import CollectionSchema, FieldSchema, utility, Collection, DataType
 from configparser import ConfigParser
 
+
 def show_coll(query):
     configur = ConfigParser()
     configur.read('config.ini')
@@ -29,6 +30,7 @@ def show_coll(query):
     for item in collection_list:
         print(item)
 
+
 def drop_coll(query):
     collection_name = query['name']
 
@@ -49,6 +51,7 @@ def drop_coll(query):
     else:
         utility.drop_collection(collection_name=collection_name, using=using, timeout=timeout)
 
+
 def rename_coll(query):
     old_collection_name = query['old_coll']
     new_collection_name = query['new_coll']
@@ -68,10 +71,11 @@ def rename_coll(query):
 
     if timeout is None:
         utility.rename_collection(old_collection_name=old_collection_name, new_collection_name=new_collection_name,
-                                        new_db_name=new_db_name, using=using)
+                                  new_db_name=new_db_name, using=using)
     else:
         utility.rename_collection(old_collection_name=old_collection_name, new_collection_name=new_collection_name,
-                                        new_db_name=new_db_name, using=using, timeout=timeout)
+                                  new_db_name=new_db_name, using=using, timeout=timeout)
+
 
 def load_coll(query):
     collection_name = query['name']
@@ -103,6 +107,7 @@ def load_coll(query):
     else:
         collection.load(replica_number=replica_number, timeout=timeout, _async=_async, _refresh=_refresh)
 
+
 def release_coll(query):
     collection_name = query['name']
 
@@ -124,6 +129,7 @@ def release_coll(query):
     else:
         collection.release(timeout=timeout)
 
+
 def compact_coll(query):
     collection_name = query['name']
 
@@ -144,6 +150,7 @@ def compact_coll(query):
         collection.compact()
     else:
         collection.compact(timeout=timeout)
+
 
 def str_to_dtype_for_field(field_dict):
     # field type 和 element type需要改
@@ -167,6 +174,7 @@ def str_to_dtype_for_field(field_dict):
         field_dict['element_type'] = str_to_dtype[field_dict['element_type']]
 
     return field_dict
+
 
 def create_coll(query):
     # convert field str to field dict, including converting DataType str to DataType
@@ -195,31 +203,35 @@ def create_coll(query):
                                       is_dynamic=field_dict.get('is_dynamic', False)))
         elif field_dict['type'] is DataType.VARCHAR:
             fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'],
-                                      max_length=field_dict['max_length'], description=field_dict.get('description', ''),
-                                      auto_id=field_dict.get('auto_id', False), is_primary=field_dict.get('is_primary', False),
-                                      is_partition_key=field_dict.get('is_partition_key', False), is_dynamic=field_dict.get('is_dynamic', False)))
+                                      max_length=field_dict['max_length'],
+                                      description=field_dict.get('description', ''),
+                                      auto_id=field_dict.get('auto_id', False),
+                                      is_primary=field_dict.get('is_primary', False),
+                                      is_partition_key=field_dict.get('is_partition_key', False),
+                                      is_dynamic=field_dict.get('is_dynamic', False)))
         elif field_dict['type'] is DataType.ARRAY and field_dict['element_type'] is not DataType.VARCHAR:
             fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'],
                                       max_capacity=field_dict['max_capacity'], element_type=field_dict['element_type'],
-                                      description=field_dict.get('description', ''), is_dynamic=field_dict.get('is_dynamic', False)))
+                                      description=field_dict.get('description', ''),
+                                      is_dynamic=field_dict.get('is_dynamic', False)))
         elif field_dict['type'] is DataType.ARRAY and field_dict['element_type'] is DataType.VARCHAR:
             fields.append(FieldSchema(name=field_dict['name'], dtype=field_dict['type'],
                                       max_capacity=field_dict['max_capacity'], element_type=field_dict['element_type'],
                                       max_length=field_dict['max_length'],
-                                      description=field_dict.get('description', ''), is_dynamic=field_dict.get('is_dynamic', False)))
+                                      description=field_dict.get('description', ''),
+                                      is_dynamic=field_dict.get('is_dynamic', False)))
         else:
             fields.append(FieldSchema.construct_from_dict(field_dict))
-        #fields = [FieldSchema.construct_from_dict(field_dict) for field_dict in field_dicts]
+        # fields = [FieldSchema.construct_from_dict(field_dict) for field_dict in field_dicts]
     schema = CollectionSchema(fields=fields, description=query['params'].get('description', ''),
                               enable_dynamic_field=query['params'].get('enable_dynamic_field', 0),
                               primary_field=query['params'].get('primary_field', None),
-                              partition_key_field=query['params'].get('partition_key_field', None)) # 0->False, 1->True
-    if timeout is None:
-        collection = Collection(name=collection_name, schema=schema, using=using,
-                                num_shards=query['params'].get('num_shards', 1))
-    else:
-        collection = Collection(name=collection_name, schema=schema, using=using,
-                                num_shards=query['params'].get('num_shards', 1), timeout=timeout)
+                              partition_key_field=query['params'].get('partition_key_field', None))  # 0->False, 1->True
+
+    collection = Collection(name=collection_name, schema=schema, using=using,
+                            num_shards=query['params'].get('num_shards', 1),
+                            num_partitions=query['params'].get('num_partitions', None),
+                            timeout=timeout)
 
     # 检查时可以用CollectionSchema下的to_dict方法、Collection的num_shards方法和FieldSchema的to_dict方法
     # 记得更新下READMD里Create Collection

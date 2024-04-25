@@ -195,7 +195,7 @@ def p_type(p):
              | STRING "(" NUMBER ")" STRING "(" NUMBER ")"
     """
     p[0] = dict()
-    if len(p) == 2: 
+    if len(p) == 2:
         p[0]['type'] = p[1].upper()
     elif len(p) == 5: # VARCHAR done
         p[0]['type'] = p[1].upper() # should be VARCHAR
@@ -227,14 +227,11 @@ def p_attr(p):
     """ attr : PRIMARY KEY
              | PARTITION KEY
              | AUTO ID
-             | DYNAMIC
              | DESCRIPTION "(" QSTRING ")"
     """
     p[0] = dict()
-    if len(p) == 2: 
-        if p[1].upper() == 'DYNAMIC':
-            p[0]['is_dynamic'] = True
-    elif len(p) == 3:
+    # cannot explicitly set a field as a dynamic field
+    if len(p) == 3:
         if p[1].upper() == 'PRIMARY' and p[2].upper() == 'KEY':
             p[0]['is_primary'] = True
         elif p[1].upper() == 'PARTITION' and p[2].upper() == 'KEY':
