@@ -4,29 +4,18 @@ from .exceptions import LexerException
 
 reserved = {
     'select': 'SELECT',
-    'distinct':'DISTINCT',
     'from'  : 'FROM',
     'where' : 'WHERE',
-    'inner' : 'INNER',
-    'left'  : 'LEFT',
-    'right' : 'RIGHT',
-    'full'  : 'FULL',
-    'join'  : 'JOIN',
     'on'    : 'ON',
-    'group' : 'GROUP',
     'by'    : 'BY',
-    'having': 'HAVING',
     'order' : 'ORDER',
-    'desc'  : 'DESC',
-    'asc'   : 'ASC',
     'limit' : 'LIMIT',
+    'offset': 'OFFSET',
     'bulk'  : 'BULK',
     'insert': 'INSERT',
     'upsert': 'UPSERT',
     'into'  : 'INTO',
     'values': 'VALUES',
-    'update': 'UPDATE',
-    'set'   : 'SET',
     'delete': 'DELETE',
 
     'create': 'CREATE',
@@ -41,7 +30,6 @@ reserved = {
     'use'   : 'USE',
     'database': 'DATABASE',
     'databases': 'DATABASES',
-    'alter' : 'ALTER',
     'drop'  : 'DROP',
     'show'  : 'SHOW',
     'rename': 'RENAME',
@@ -49,32 +37,19 @@ reserved = {
     'release': 'RELEASE',
     'compact': 'COMPACT',
     
-    'dynamic': 'DYNAMIC',
     'primary': 'PRIMARY',
     'key'    : 'KEY',
     'auto'   : 'AUTO',
     'id'     : 'ID',
     'description' : 'DESCRIPTION',
 
-    'as'    : 'AS',
-    'and'   : 'AND',
     'for'   : 'FOR',
     'to'    : 'TO',
-    'or'    : 'OR',
     'in'    : 'IN',
     'on'    : 'ON',
     'with'  : 'WITH',
     'from'  : 'FROM',
-    'like'  : 'LIKE',
-    'between': 'BETWEEN',
-    'is'    : 'IS',
-    'not'   : 'NOT',
-    'null'  : 'NULL',
     'count' : 'COUNT',
-    'sum'   : 'SUM',
-    'avg'   : 'AVG',
-    'min'   : 'MIN',
-    'max'   : 'MAX'
 }
 
 tokens = (
@@ -87,7 +62,7 @@ tokens = (
     'COMMA',
 ) + tuple(set(reserved.values()))
 
-literals = '(){}@%.*[]:-^'
+literals = '()<>{}@%.*[]:-^'
 t_COMPARISON = r'<>|!=|>=|<=|=|>|<'
 t_END = r';'
 t_COMMA = r','
