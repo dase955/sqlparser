@@ -233,5 +233,3 @@ def create_coll(query):
                             num_shards=query['params'].get('num_shards', 1),
                             num_partitions=query['params'].get('num_partitions', None),
                             timeout=timeout)
-
-    # 检查时可以用CollectionSchema下的to_dict方法、Collection的num_shards方法和FieldSchema的to_dict方法
