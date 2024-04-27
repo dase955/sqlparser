@@ -369,23 +369,9 @@ def p_create_idx(p):
         p[0]['params'] = new_param_list
 
 def p_idx_param_list(p):
-    """ idx_param_list : idx_param idx_param_list
-                       | COMMA idx_param idx_param_list
-                       | empty
+    """ idx_param_list : coll_param_list
     """
-    p[0] = dict()
-    if len(p) == 3:
-        p[0] = p[1] | p[2]
-    elif len(p) == 4:
-        p[0] = p[2] | p[3]
-    
-def p_idx_param(p):
-    """ idx_param : QSTRING ":" QSTRING
-                  | QSTRING ":" NUMBER
-    """
-    p[0] = dict()
-    if len(p) > 2:
-        p[0][p[1]] = p[3]
+    p[0] = p[1]
 
 def p_show_idx(p):
     """ show_idx : SHOW INDEXES ON STRING
@@ -665,14 +651,63 @@ def p_search(p):
     p[0] = p[1]
     
 def p_search_coll(p):
-    """ search_coll : empty
+    """ search_coll : SELECT field_name_list FROM STRING ORDER BY STRING "<" "-" ">" vec_list limit offset where WITH "{" search_param_list "}"
     """
-    pass
-
+    p[0] = dict()
+    p[0]['fields'] = p[2]
+    p[0]['coll_name'] = p[4]
+    p[0]['anns'] = p[7]
+    p[0]['data'] = p[11]
+    p[0]['limit'] = p[12]
+    # p[0]['offset'] = p[13]
+    p[0]['expr'] = p[14]
+    p[0]['parts'] = None
+    if 'expr' in p[17]:
+        p[0]['expr'] = p[17]['expr']
+        del p[17]['expr']
+    
+    new_param_list = dict()
+    new_param_list['offset'] = p[13]
+    new_param_list['metric_type'] = p[17].get('metric_type', None)
+    if 'metric_type' in p[17]:
+        del p[17]['metric_type']
+    new_param_list['params'] = p[17]
+    p[0]['param'] = new_param_list
+    
 def p_search_part(p):
-    """ search_part : empty
+    """ search_part : SELECT field_name_list FROM PARTITION part_name_list ON STRING ORDER BY STRING "<" "-" ">" vec_list limit offset where WITH "{" search_param_list "}"
     """
-    pass
+    p[0] = dict()
+    p[0]['fields'] = p[2]
+    p[0]['coll_name'] = p[7]
+    p[0]['anns'] = p[10]
+    p[0]['data'] = p[14]
+    p[0]['limit'] = p[15]
+    # p[0]['offset'] = p[16]
+    p[0]['expr'] = p[17]
+    p[0]['parts'] = p[5]
+    if 'expr' in p[20]:
+        p[0]['expr'] = p[20]['expr']
+        del p[20]['expr']
+    
+    new_param_list = dict()
+    new_param_list['offset'] = p[16]
+    new_param_list['metric_type'] = p[20].get('metric_type', None)
+    if 'metric_type' in p[20]:
+        del p[20]['metric_type']
+    new_param_list['params'] = p[20]
+    p[0]['param'] = new_param_list
+    
+def p_vec_list(p):
+    """ vec_list : "[" value_list "]"
+    """
+    p[0] = p[2]
+
+def p_search_param_list(p):
+    """ search_param_list : coll_param_list
+    """
+    p[0] = p[1]
+    
 ###################################################
 ############           Where           ############
 ###################################################

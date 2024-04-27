@@ -28,56 +28,46 @@ def search(query):
         round_decimal = configur.getint(section, 'round_decimal')
     if 'ignore_growing' in configur[section]:
         ignore_growing = configur.getboolean(section, 'ignore_growing')
+    param = query['param']
     param['ignore_growing'] = ignore_growing
 
-    json_dict = {}
+    collection_name = query['coll_name']
+    field_list = query['fields']
+    partition_names = query['parts']
+    data = query['data']
+    anns_field = query['anns']
+    limit = query['limit']
+    expr = query['expr']
+
     result = None
     result_dict_list = []
-    message = 'success'
     output_fields = [] # set this list according to field_list
-    try:
-        collection = Collection(collection_name, using=using)
-        
-        if len(field_list) == 0:
-            message = 'failure'
-        elif field_list[0] == '*':
-            for field in collection.schema.fields:
-                if field.to_dict()['type'] != DataType.BINARY_VECTOR:
-                    continue;
-                elif field.to_dict()['type'] != DataType.FLOAT_VECTOR:
-                    continue;
-                else:
-                    output_fields.append(field.to_dict()['name'])
-        else:
-            output_fields = field_list
+    
+    collection = Collection(collection_name, using=using)
+    if '*' in field_list:
+        output_fields = [field.to_dict()['name'] for field in collection.schema.fields]
+    else:
+        output_fields = field_list
 
-        if message == 'success':
-            if timeout is None:
-                result = collection.search(data=data, anns_field=anns_field, param=param, limit=limit, expr=expr, 
-                                            partition_names=partition_names, output_fields=output_fields, round_decimal=round_decimal,
-                                            consistency_level=consistency_level, _async=_async, _callback=_callback)
-            else:
-                result = collection.search(data=data, anns_field=anns_field, param=param, limit=limit, expr=expr, 
-                                            partition_names=partition_names, output_fields=output_fields, round_decimal=round_decimal,
-                                            timeout=timeout, consistency_level=consistency_level, _async=_async, _callback=_callback)
-            for hits in result: # type: ignore
-                for hit in hits:
-                    # get the value of an output field specified in the search request.
-                    # dynamic fields are supported, but vector fields are not supported yet.    
-                    result_dict = {}
-                    result_dict['pk'] = hit.entity.pk
-                    result_dict['score'] = hit.entity.score
-                    for field_name in output_fields:
-                        result_dict[field_name] = hit.entity.get(field_name)
-                    result_dict_list.append(result_dict)
-    except MilvusException:
-        message = 'failure'
-    finally:
-        json_dict['message'] = message
-
-    if message == 'success':
-        json_dict['result'] = [json.dumps(result_dict) for result_dict in result_dict_list]
-    json_str = json.dumps(json_dict, indent=4)
-    json_str = json_str.replace(',', ',\n')
-
-    return json_str
+    if timeout is None:
+        result = collection.search(data=data, anns_field=anns_field, param=param, limit=limit, expr=expr, 
+                                   partition_names=partition_names, output_fields=output_fields, round_decimal=round_decimal,
+                                   consistency_level=consistency_level, _async=_async, _callback=_callback)
+    else:
+        result = collection.search(data=data, anns_field=anns_field, param=param, limit=limit, expr=expr, 
+                                   partition_names=partition_names, output_fields=output_fields, round_decimal=round_decimal,
+                                   timeout=timeout, consistency_level=consistency_level, _async=_async, _callback=_callback)
+    
+    for hits in result:
+        for hit in hits:
+            # get the value of an output field specified in the search request.
+            # dynamic fields are supported, but vector fields are not supported yet.    
+            result_dict = {}
+            result_dict['pk'] = hit.entity.pk
+            result_dict['score'] = hit.entity.score
+            for field_name in output_fields:
+                result_dict[field_name] = hit.entity.get(field_name)
+            result_dict_list.append(result_dict)
+    
+    for result_dict in result_dict_list:
+        print(result_dict)

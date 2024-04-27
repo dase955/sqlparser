@@ -43,10 +43,5 @@ def query(query):
         result_list = collection.query(expr=expr, output_fields=output_fields, partition_names=partition_names, timeout=timeout, 
                                        limit=limit, offset=offset, consistency_level=consistency_level, ignore_growing=ignore_growing)
         
-    for output_field in output_fields:
-        print(output_field, end=(' '*6))
-    print('', end='\n')
     for result in result_list:
-        for output_field in output_fields:
-            print(result[output_field], end=(' '*6))
-        print('', end='\n')
+        print(result)
