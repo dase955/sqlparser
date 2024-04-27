@@ -58,7 +58,7 @@ DROP DATABASE {name}
 
 ### 对Milvus Collection的管理
 
-#### 创建一个Collection (TODO)
+#### 创建一个Collection
 
 创建一个Collection，每个参数的具体含义见milvus文档
 
@@ -117,7 +117,7 @@ CREATE COLLECTION {coll_name} ({field_list})
 
    - enable_dynamic_field：可取1或0，1代表True, 0代表False
 
-   - num_shards：取值为1到16里的整数
+   - num_shards：取值为 $[1, 16]$ 里的整数
 
    - num_partitions: 取值为 $[1, 4096]$ 里的整数
 
@@ -581,4 +581,80 @@ DELETE FROM {coll_name} WITH {'expr':'...'}
 
  - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
 
- - expr：这里的expr与Milvus文档里的expr的格式相同，与conditions只能二选一
+ - expr：这里的expr为Milvus bool expression，与Milvus文档里的expr的格式相同，与conditions只能二选一
+
+### 对一个Collection的数据的查询与搜索
+
+#### 查询符合条件的数据
+
+```
+# 对整个Collection
+SELECT {field_name_list} FROM {coll_name} LIMIT {limit} OFFSET {offset} WITH {'expr':'...'}
+SELECT {field_name_list} FROM {coll_name} LIMIT {limit} OFFSET {offset} WHERE {conditions}
+
+# 对多个分区
+SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} LIMIT {limit} OFFSET {offset} WITH {'expr':'...'}
+SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} LIMIT {limit} OFFSET {offset} WHERE {conditions}
+
+# Example：SELECT book_id, book_intro FROM book LIMIT 10 OFFSET 2 WHERE book_id in [2, 10];
+# Example：SELECT book_id, book_intro FROM PARTITION part1, part2 ON book LIMIT 10 OFFSET 2 WHERE book_id in [2, 10];
+# Example: SELECT book_id, book_intro, count(*) FROM PARTITION part1, part2 ON book LIMIT 10 OFFSET 2 WHERE book_id in [2, 10];
+```
+
+参数解释如下：
+
+ - field_name_list：field_name的列表，field_name取值类型为字符串，且不可包含单/双引号，可以包含count(*)，返回筛选后的数据数量，可以包含 * ，表示返回所有field
+
+ - part_name_list：part_name的列表，part_name取值类型为字符串，且不可包含单/双引号
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+
+ - expr：这里的expr为Milvus bool expression，与Milvus文档里的expr的格式相同，与conditions只能二选一
+
+ - limit：与Milvus Query limit相同，field_name_list里有count(*)时不可以使用limit
+
+ - offset：与Milvus Query offset相同
+
+ #### 近似最近邻搜索
+
+```
+# 对整个Collection
+SELECT {field_name_list} FROM {coll_name} ORDER BY {search_field} <-> {vector_list} LIMIT {limit} OFFSET {offset} WITH {param_list}
+SELECT {field_name_list} FROM {coll_name} ORDER BY {search_field} <-> {vector_list} LIMIT {limit} OFFSET {offset} WHERE {conditions} WITH {param_list}
+
+# 对多个分区
+SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} ORDER BY {search_field} <-> {vector_list} LIMIT {limit} OFFSET {offset} WITH {param_list}
+SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} ORDER BY {search_field} <-> {vector_list} LIMIT {limit} OFFSET {offset} WHERE {conditions} WITH {param_list}
+
+# Example：SELECT book_id, book_price FROM book ORDER BY book_vector <-> [[1.0, 0.0], [2.2, 2.4]] LIMIT 20 OFFSET 2 WHERE book_id in [2, 200] WITH {"metric_type":"L2", "nprobe":10}
+# Example：SELECT book_id, book_price FROM book ORDER BY book_vector <-> [[1.0, 0.0], [2.2, 2.4]] LIMIT 20 OFFSET 2 WITH {"expr":"book_id < 200", metric_type":"L2", "nprobe":10}
+# Example：SELECT book_id, book_price FROM PARTITION part1, part2 ON book ORDER BY book_vector <-> [[1.0, 0.0], [2.2, 2.4]] LIMIT 20 OFFSET 2 WITH {"expr":"book_id < 200", metric_type":"L2", "nprobe":10}
+```
+
+参数解释如下：
+
+ - field_name_list：field_name的列表，field_name取值类型为字符串，且不可包含单/双引号，可以包含 * ，表示返回所有field
+
+ - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
+
+ - part_name_list：part_name的列表，part_name取值类型为字符串，且不可包含单/双引号
+
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+
+ - limit：与Milvus Search里的参数limit相同
+
+ - offset：与Milvus Search里的offset相同
+
+ - search_field：进行ANN搜索的向量field命名，一次只能有一个，取值类型为字符串，且不可包含单/双引号
+
+ - vector_list：多个vector的集合，其中的vector为ANN查询的向量，vector只能为float vector和binary vector，其格式参考Insert部分
+
+ - param_list：一些Search时的参数，如下
+
+   - expr：这里的expr为Milvus bool expression，与Milvus文档里的expr的格式相同，与conditions只能二选一
+
+   - metric_type：必选，参考Milvus Search的参数metric_type
+
+   - others：其他参数，参考Milvus的Search部分

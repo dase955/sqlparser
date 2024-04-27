@@ -12,6 +12,8 @@ def p_expression(p):
                    | idx END
                    | insert END
                    | delete END
+                   | query END
+                   | search END
     """
     p[0] = p[1]
 
@@ -367,23 +369,9 @@ def p_create_idx(p):
         p[0]['params'] = new_param_list
 
 def p_idx_param_list(p):
-    """ idx_param_list : idx_param idx_param_list
-                       | COMMA idx_param idx_param_list
-                       | empty
+    """ idx_param_list : coll_param_list
     """
-    p[0] = dict()
-    if len(p) == 3:
-        p[0] = p[1] | p[2]
-    elif len(p) == 4:
-        p[0] = p[2] | p[3]
-    
-def p_idx_param(p):
-    """ idx_param : QSTRING ":" QSTRING
-                  | QSTRING ":" NUMBER
-    """
-    p[0] = dict()
-    if len(p) > 2:
-        p[0][p[1]] = p[3]
+    p[0] = p[1]
 
 def p_show_idx(p):
     """ show_idx : SHOW INDEXES ON STRING
@@ -511,8 +499,13 @@ def p_field_name_list(p):
     
 def p_field_name(p):
     """ field_name : STRING
+                   | COUNT "(" "*" ")"
+                   | "*"
     """
-    p[0] = [ p[1] ]
+    if len(p) == 2:
+        p[0] = [ p[1] ]
+    elif len(p) == 5:
+        p[0] = [ 'count(*)' ]
     
 def p_values_list(p):
     """ values_list : value_tuple values_list
@@ -578,29 +571,152 @@ def p_delete(p):
     p[0] = p[1]
 
 def p_delete_coll(p):
-    """ delete_coll : DELETE FROM STRING WHERE conditions
+    """ delete_coll : DELETE FROM STRING where
                     | DELETE FROM STRING WITH "{" QSTRING ":" QSTRING "}"
     """
     p[0] = dict()
     p[0]['type'] = 'delete'
     p[0]['coll_name'] = p[3]
-    if len(p) == 6:
-        p[0]['expr'] = p[5]['expr']
+    if len(p) == 5:
+        p[0]['expr'] = p[4]['expr']
     elif len(p) == 10:
-        p[0]['expr'] = p[8]
+        p[0][p[6]] = p[8]
         
 def p_delete_part(p):
-    """ delete_part : DELETE FROM PARTITION STRING ON STRING WHERE conditions
+    """ delete_part : DELETE FROM PARTITION STRING ON STRING where
                     | DELETE FROM PARTITION STRING ON STRING WITH "{" QSTRING ":" QSTRING "}"
     """
     p[0] = dict()
     p[0]['type'] = 'delete'
     p[0]['part_name'] = p[4]
     p[0]['coll_name'] = p[6]
-    if len(p) == 9:
-        p[0]['expr'] = p[8]['expr']
+    if len(p) == 8:
+        p[0]['expr'] = p[7]['expr']
     elif len(p) == 13:
-        p[0]['expr'] = p[11]
+        p[0][p[9]] = p[11]
+
+###################################################
+############           Query           ############
+###################################################
+def p_query(p):
+    """ query : query_coll
+              | query_part
+    """
+    p[0] = p[1]
+
+def p_query_coll(p):
+    """ query_coll : SELECT field_name_list FROM STRING limit offset WITH "{" QSTRING ":" QSTRING "}"
+                   | SELECT field_name_list FROM STRING limit offset where
+    """
+    p[0] = dict()
+    p[0]['type'] = 'query'
+    p[0]['fields'] = p[2]
+    p[0]['coll_name'] = p[4]
+    p[0]['limit'] = p[5]
+    p[0]['offset'] = p[6]
+    p[0]['parts'] = None
+    if len(p) == 13:
+        p[0][p[9]] = p[11]
+    elif len(p) == 8:
+        p[0]['expr'] = p[7]
+
+def p_query_part(p):
+    """ query_part : SELECT field_name_list FROM PARTITION part_name_list ON STRING limit offset WITH "{" QSTRING ":" QSTRING "}"
+                   | SELECT field_name_list FROM PARTITION part_name_list ON STRING limit offset where
+    """
+    p[0] = dict()
+    p[0]['type'] = 'query'
+    p[0]['fields'] = p[2]
+    p[0]['parts'] = p[5]
+    p[0]['coll_name'] = p[7]
+    p[0]['limit'] = p[8]
+    p[0]['offset'] = p[9]
+    if len(p) == 16:
+        p[0][p[12]] = p[14]
+    elif len(p) == 11:
+        p[0]['expr'] = p[10]
+
+def p_part_name_list(p):
+    """ part_name_list : field_name_list
+    """
+    p[0] = p[1]
+
+###################################################
+############           Search          ############
+###################################################
+def p_search(p):
+    """ search : search_coll
+               | search_part
+    """
+    p[0] = p[1]
+
+def p_search_coll(p):
+    """ search_coll : SELECT field_name_list FROM STRING ORDER BY STRING "<" "-" ">" vec_list limit offset where WITH "{" search_param_list "}"
+    """
+    p[0] = dict()
+    p[0]['type'] = 'search'
+    p[0]['fields'] = p[2]
+    p[0]['coll_name'] = p[4]
+    p[0]['anns'] = p[7]
+    p[0]['data'] = p[11]
+    p[0]['limit'] = p[12]
+    # p[0]['offset'] = p[13]
+    p[0]['expr'] = p[14]
+    p[0]['parts'] = None
+    if 'expr' in p[17]:
+        p[0]['expr'] = p[17]['expr']
+        del p[17]['expr']
+
+    new_param_list = dict()
+    new_param_list['offset'] = p[13]
+    new_param_list['metric_type'] = p[17].get('metric_type', None)
+    if 'metric_type' in p[17]:
+        del p[17]['metric_type']
+    new_param_list['params'] = p[17]
+    p[0]['param'] = new_param_list
+
+def p_search_part(p):
+    """ search_part : SELECT field_name_list FROM PARTITION part_name_list ON STRING ORDER BY STRING "<" "-" ">" vec_list limit offset where WITH "{" search_param_list "}"
+    """
+    p[0] = dict()
+    p[0]['type'] = 'search'
+    p[0]['fields'] = p[2]
+    p[0]['coll_name'] = p[7]
+    p[0]['anns'] = p[10]
+    p[0]['data'] = p[14]
+    p[0]['limit'] = p[15]
+    # p[0]['offset'] = p[16]
+    p[0]['expr'] = p[17]
+    p[0]['parts'] = p[5]
+    if 'expr' in p[20]:
+        p[0]['expr'] = p[20]['expr']
+        del p[20]['expr']
+
+    new_param_list = dict()
+    new_param_list['offset'] = p[16]
+    new_param_list['metric_type'] = p[20].get('metric_type', None)
+    if 'metric_type' in p[20]:
+        del p[20]['metric_type']
+    new_param_list['params'] = p[20]
+    p[0]['param'] = new_param_list
+
+def p_vec_list(p):
+    """ vec_list : "[" value_list "]"
+    """
+    p[0] = p[2]
+
+def p_search_param_list(p):
+    """ search_param_list : coll_param_list
+    """
+    p[0] = p[1]
+
+###################################################
+############           Where           ############
+###################################################
+def p_where(p):
+    """ where : WHERE conditions
+    """
+    p[0] = p[2]
 
 
 def p_conditions(p):
@@ -625,6 +741,24 @@ def p_conditions(p):
     p[0] = {
         'expr': bool_expr
     }
+
+def p_limit(p):
+    """ limit : empty
+              | LIMIT NUMBER
+    """
+    if len(p) == 2:
+        p[0] = None
+    elif len(p) == 3:
+        p[0] = p[2]
+
+def p_offset(p):
+    """ offset : empty
+               | OFFSET NUMBER
+    """
+    if len(p) == 2:
+        p[0] = None
+    elif len(p) == 3:
+        p[0] = p[2]
 
 
 def p_compare(p):
@@ -689,6 +823,7 @@ def p_empty(p):
     """empty :"""
     pass
 
+
 def p_error(p):
     raise GrammarException("Syntax error in input!")
 
@@ -699,6 +834,7 @@ DEBUG = False
 
 L = lex.lex(module=lexer, optimize=False, debug=DEBUG)
 P = yacc.yacc(debug=DEBUG)
+
 
 def parse_handle(sql):
     return P.parse(input=sql,lexer=L,debug=DEBUG)
