@@ -654,6 +654,7 @@ def p_search_coll(p):
     """ search_coll : SELECT field_name_list FROM STRING ORDER BY STRING "<" "-" ">" vec_list limit offset where WITH "{" search_param_list "}"
     """
     p[0] = dict()
+    p[0]['type'] = 'search'
     p[0]['fields'] = p[2]
     p[0]['coll_name'] = p[4]
     p[0]['anns'] = p[7]
@@ -678,6 +679,7 @@ def p_search_part(p):
     """ search_part : SELECT field_name_list FROM PARTITION part_name_list ON STRING ORDER BY STRING "<" "-" ">" vec_list limit offset where WITH "{" search_param_list "}"
     """
     p[0] = dict()
+    p[0]['type'] = 'search'
     p[0]['fields'] = p[2]
     p[0]['coll_name'] = p[7]
     p[0]['anns'] = p[10]
