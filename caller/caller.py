@@ -7,6 +7,7 @@ from caller.call_idx import *
 from caller.call_insert import *
 from caller.call_delete import *
 from caller.call_query import *
+from caller.call_search import *
 
 func_map = {
     'connect' : connect,
@@ -37,5 +38,6 @@ func_map = {
     'insert' : insert,
     'upsert' : upsert,
     'delete' : delete,
-    'query' : query
+    'query' : query,
+    'search' : search
 }
