@@ -585,12 +585,12 @@ def p_delete_coll(p):
     p[0]['type'] = 'delete'
     p[0]['coll_name'] = p[3]
     if len(p) == 6:
-        p[0]['expr'] = p[5]
+        p[0]['expr'] = p[5]['expr']
     elif len(p) == 10:
         p[0]['expr'] = p[8]
         
-def p_delete_coll(p):
-    """ delete_coll : DELETE FROM PARTITION STRING ON STRING WHERE conditions
+def p_delete_part(p):
+    """ delete_part : DELETE FROM PARTITION STRING ON STRING WHERE conditions
                     | DELETE FROM PARTITION STRING ON STRING WITH "{" QSTRING ":" QSTRING "}"
     """
     p[0] = dict()
@@ -598,9 +598,90 @@ def p_delete_coll(p):
     p[0]['part_name'] = p[4]
     p[0]['coll_name'] = p[6]
     if len(p) == 9:
-        p[0]['expr'] = p[8]
+        p[0]['expr'] = p[8]['expr']
     elif len(p) == 13:
         p[0]['expr'] = p[11]
+
+
+def p_conditions(p):
+    """ conditions : conditions AND conditions
+                   | conditions OR conditions
+                   | "(" conditions ")"
+                   | compare
+    """
+    bool_expr = None
+    if len(p) == 2:
+        # compare
+        bool_expr = p[1]['expr']
+    elif len(p) == 4:
+        if '(' in p:
+            # brackets
+            bool_expr = f'({p[2]["expr"]})'
+        elif p[2].upper() == 'AND':
+            bool_expr = f'({p[1]["expr"]}) AND ({p[3]["expr"]})'
+        elif p[2].upper() == 'OR':
+            bool_expr = f'({p[1]["expr"]}) OR ({p[3]["expr"]})'
+
+    p[0] = {
+        'expr': bool_expr
+    }
+
+
+def p_compare(p):
+    """ compare : STRING COMPARISON value
+                | STRING like QSTRING
+                | STRING BETWEEN value AND value
+                | STRING in value_tuple
+    """
+    bool_expr = None
+    if len(p) == 4:
+        # comparison, like, is, in
+
+        # like
+        if p[2] in ['LIKE', 'NOT LIKE']:
+            bool_expr = f'({p[1]} LIKE "{p[3][0]}")'
+            if p[2].startswith('NOT'):
+                bool_expr = f'(NOT {bool_expr})'
+        elif p[2] in ['IN', 'NOT IN']:
+            bool_expr = f'({p[1]} IN "{p[3][0]}")'
+            if p[2].startswith('NOT'):
+                bool_expr = f'(NOT {bool_expr})'
+        else:
+            # comparison
+            comp = p[2]
+            if comp == '<>':
+                comp = '!='
+            elif comp == '=':
+                comp = '=='
+            bool_expr = f'({p[1]} {comp} {p[3][0]})'
+    elif len(p) == 6:
+        # between and
+        bool_expr = f'({p[3][0]} <= {p[1]} <= {p[5][0]})'
+
+    p[0] = {
+        'expr': bool_expr
+    }
+
+
+def p_like(p):
+    """ like : LIKE
+             | NOT LIKE
+    """
+    if len(p) == 2:
+        p[0] = 'LIKE'
+    else:
+        p[0] = 'NOT LIKE'
+
+
+def p_in(p):
+    """ in : IN
+           | NOT IN
+    """
+    if len(p) == 2:
+        p[0] = 'IN'
+    else:
+        p[0] = 'NOT IN'
+
 
 # empty return None
 # so expression like (t : empty) => len(p)==2

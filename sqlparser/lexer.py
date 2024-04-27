@@ -48,7 +48,7 @@ reserved = {
     'load'  : 'LOAD',
     'release': 'RELEASE',
     'compact': 'COMPACT',
-    
+
     'dynamic': 'DYNAMIC',
     'primary': 'PRIMARY',
     'key'    : 'KEY',
@@ -100,22 +100,26 @@ def t_STRING(t):
         t.value = t.value.upper()
     return t
 
-def t_QSTRING(t):
-    r"('[^']*')|(\"[^\"]*\")|(`[^`]*`)"
-    t.value = t.value[1:-1]
-    return t
 
 def t_FLOAT(t):
-    r"(-?\d+)(\.\d+)?"
+    # r"(-?\d+)(\.\d+)?"
+    r"[-+]?[0-9]+(\.([0-9]+)?([eE][-+]?[0-9]+)?|[eE][-+]?[0-9]+)"
     t.value = float(t.value)
     return t
+
 
 def t_NUMBER(t):
     r"(0|-?[1-9]\d*)"
     t.value = int(t.value)
     return t
 
+
+def t_QSTRING(t):
+    r"('[^']*')|(\"[^\"]*\")|(`[^`]*`)"
+    t.value = t.value[1:-1]
+    return t
+
+
 def t_error(t):
     raise LexerException("Illegal character '%s' at line %s pos %s"
-                        % (t.value[0],t.lineno,t.lexpos))
-
+                         % (t.value[0], t.lineno, t.lexpos))
