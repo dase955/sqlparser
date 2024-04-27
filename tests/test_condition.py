@@ -89,3 +89,24 @@ class TestParser(unittest.TestCase):
                 result = parse(sql)
                 print(f'result: {result}')
 
+    def test_simple_between_and(self):
+        tuples = [(3, 5.0), (3.0, 5)]
+        for lvalue, rvalue in tuples:
+            sql = f"delete from {TEST_COLLECTION_NAME} where book_id between {lvalue} and {rvalue};"
+            print(f'sql: {sql}')
+            result = parse(sql)
+            print(f'result: {result}')
+
+    def test_simple_like(self):
+        sql = f'delete from {TEST_COLLECTION_NAME} where book_id like "prefix%";'
+        print(f'sql: {sql}')
+        result = parse(sql)
+        print(f'result: {result}')
+
+    def test_simple_in(self):
+        lists = ["[1, 2.0, 3]", '["abc", "def", "\'"]']
+        for in_list in lists:
+            sql = f'delete from {TEST_COLLECTION_NAME} where book_id in {in_list};'
+            print(f'sql: {sql}')
+            result = parse(sql)
+            print(f'result: {result}')

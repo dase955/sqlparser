@@ -715,8 +715,13 @@ def p_search_param_list(p):
 ###################################################
 def p_where(p):
     """ where : WHERE conditions
+              | empty
     """
-    p[0] = p[2]
+    if len(p) == 2:
+        p[0] = str()
+    elif len(p) == 3:
+        p[0] = p[2]
+
 
 
 def p_conditions(p):
@@ -767,7 +772,7 @@ def p_compare(p):
                 | STRING "<" value
                 | STRING like QSTRING
                 | STRING BETWEEN value AND value
-                | STRING in value_tuple
+                | STRING in "[" value_list "]"
     """
     bool_expr = None
     if len(p) == 4:
@@ -775,11 +780,7 @@ def p_compare(p):
 
         # like
         if p[2] in ['LIKE', 'NOT LIKE']:
-            bool_expr = f'({p[1]} LIKE "{p[3][0]}")'
-            if p[2].startswith('NOT'):
-                bool_expr = f'(NOT {bool_expr})'
-        elif p[2] in ['IN', 'NOT IN']:
-            bool_expr = f'({p[1]} IN "{p[3][0]}")'
+            bool_expr = f'({p[1]} LIKE "{p[3]}")'
             if p[2].startswith('NOT'):
                 bool_expr = f'(NOT {bool_expr})'
         else:
@@ -791,8 +792,13 @@ def p_compare(p):
                 comp = '=='
             bool_expr = f'({p[1]} {comp} {p[3][0]})'
     elif len(p) == 6:
-        # between and
-        bool_expr = f'({p[3][0]} <= {p[1]} <= {p[5][0]})'
+        if p[2] in ['IN', 'NOT IN']:
+            bool_expr = f'({p[1]} IN {p[4]})'
+            if p[2].startswith('NOT'):
+                bool_expr = f'(NOT {bool_expr})'
+        else:
+            # between and
+            bool_expr = f'({p[3][0]} <= {p[1]} <= {p[5][0]})'
 
     p[0] = {
         'expr': bool_expr
