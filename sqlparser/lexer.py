@@ -43,12 +43,17 @@ reserved = {
     'id'     : 'ID',
     'description' : 'DESCRIPTION',
 
+    'and'   : 'AND',
     'for'   : 'FOR',
     'to'    : 'TO',
+    'or'    : 'OR',
     'in'    : 'IN',
     'on'    : 'ON',
     'with'  : 'WITH',
     'from'  : 'FROM',
+    'like'  : 'LIKE',
+    'between': 'BETWEEN',
+    'not'   : 'NOT',
     'count' : 'COUNT',
 }
 

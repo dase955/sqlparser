@@ -763,6 +763,8 @@ def p_offset(p):
 
 def p_compare(p):
     """ compare : STRING COMPARISON value
+                | STRING ">" value
+                | STRING "<" value
                 | STRING like QSTRING
                 | STRING BETWEEN value AND value
                 | STRING in value_tuple
