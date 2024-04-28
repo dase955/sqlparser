@@ -479,7 +479,7 @@ INSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
    - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
 
-   - JSON：不支持JSON类型，可以使用bulk insert来插入
+   - JSON：{ key : value }, value格式参考BOOL、INT8 / INT16 / INT32 / INT64、FLOAT / DOUBLE、VARCHAR和ARRAY，key可以为VARCHAR格式，例如{ 'key1' : 'value_test' }
 
 #### 插入更新数据到这个Collection
 
@@ -511,7 +511,7 @@ UPSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
    - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
 
-   - JSON：不支持JSON类型，可以使用bulk insert来插入
+   - JSON：{ key : value }, value格式参考BOOL、INT8 / INT16 / INT32 / INT64、FLOAT / DOUBLE、VARCHAR和ARRAY，key可以为VARCHAR格式，例如{ 'key1' : 'value_test' }
 
 #### 插入更新数据到这个Collection的一个分区
 
