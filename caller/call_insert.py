@@ -54,7 +54,7 @@ def insert(query):
     else:
         count = collection.insert(data=data, partition_name=partition_name, timeout=timeout).insert_count
     collection.flush()
-    print('insert ' + count + ' rows')
+    print('insert ' + str(count) + ' rows')
 
 def upsert(query):
     count = None

@@ -14,7 +14,7 @@ TEST_DATABASE_NAME = "TEST_DATABASE"
 TEST_COLLECTION_NAME = "TEST_COLLECTION"
 
 
-class TestParser(unittest.TestCase):
+class TestCondition(unittest.TestCase):
     def dropTestCollection(self):
         if pymilvus.utility.has_collection(TEST_COLLECTION_NAME, self.using, self.timeout):
             pymilvus.utility.drop_collection(TEST_COLLECTION_NAME, self.timeout, self.using)

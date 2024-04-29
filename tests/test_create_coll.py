@@ -29,7 +29,7 @@ def deep_merge_dicts(dict1, dict2):
     return result
 
 
-class TestCollection(unittest.TestCase):
+class TestCreateCollection(unittest.TestCase):
     def dropTestCollection(self):
         if pymilvus.utility.has_collection(TEST_COLLECTION_NAME, self.using, self.timeout):
             pymilvus.utility.drop_collection(TEST_COLLECTION_NAME, self.timeout, self.using)

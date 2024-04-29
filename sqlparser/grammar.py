@@ -28,7 +28,7 @@ def p_db(p):
            | use_db
     """
     p[0] = p[1]
-    
+
 def p_create_db(p):
     """ create_db : CREATE DATABASE STRING
     """
@@ -44,14 +44,14 @@ def p_use_db(p):
         'type' : 'use_db',
         'name' : p[2]
     }
-    
+
 def p_show_db(p):
     """ show_db : SHOW DATABASES
     """
     p[0] = {
         'type' : 'show_db'
     }
-    
+
 def p_drop_db(p):
     """ drop_db : DROP DATABASE STRING
     """
@@ -83,7 +83,7 @@ def p_show_coll(p):
     p[0] = {
         'type' : 'show_coll'
     }
-    
+
 def p_drop_coll(p):
     """ drop_coll : DROP COLLECTION STRING
     """
@@ -100,7 +100,7 @@ def p_create_alias(p):
         'alias' : p[3],
         'coll' : p[5]
     }
-    
+
 def p_drop_alias(p):
     """ drop_alias : DROP ALIAS STRING FOR STRING
     """
@@ -117,7 +117,7 @@ def p_show_alias(p):
         'type' : 'show_alias',
         'coll' : p[4]
     }
-    
+
 def p_rename_coll(p):
     """ rename_coll : RENAME COLLECTION STRING TO STRING IN STRING
     """
@@ -127,7 +127,7 @@ def p_rename_coll(p):
         'new_coll' : p[5],
         'new_db' : p[7]
     }
-    
+
 def p_load_coll(p):
     """ load_coll : LOAD COLLECTION STRING
                   | LOAD COLLECTION STRING WITH "{" QSTRING ":" NUMBER "}"
@@ -138,7 +138,7 @@ def p_load_coll(p):
     }
     if len(p) > 4:
         p[0][p[6]] = p[8]
-    
+
 def p_release_coll(p):
     """ release_coll : RELEASE COLLECTION STRING
     """
@@ -146,7 +146,7 @@ def p_release_coll(p):
         'type' : 'release_coll',
         'name' : p[3]
     }
-    
+
 def p_compact_coll(p):
     """ compact_coll : COMPACT COLLECTION STRING
     """
@@ -154,7 +154,7 @@ def p_compact_coll(p):
         'type' : 'compact_coll',
         'name' : p[3]
     }
-    
+
 def p_create_coll(p):
     """ create_coll : CREATE COLLECTION STRING "(" field_list ")" WITH "{" coll_param_list "}"
                     | CREATE COLLECTION STRING "(" field_list ")"
@@ -173,7 +173,7 @@ def p_create_coll(p):
             'fields' : p[5],
             'params' : dict()
         }
-    
+
 def p_field_list(p):
     """ field_list : field field_list
                    | COMMA field field_list
@@ -185,12 +185,12 @@ def p_field_list(p):
         p[0] = p[1] + p[2]
     elif len(p) == 4:
         p[0] = p[2] + p[3]
-        
+
 def p_field(p):
     """ field : STRING type attr_list
     """
     p[0] = [{'name' : p[1] } | p[2] | p[3]]
-    
+
 def p_type(p):
     """ type : STRING
              | STRING "(" NUMBER ")"
@@ -225,7 +225,7 @@ def p_attr_list(p):
         p[0] = dict()
     elif len(p) == 3:
         p[0] = p[1] | p[2]
-        
+
 def p_attr(p):
     """ attr : PRIMARY KEY
              | PARTITION KEY
@@ -244,7 +244,7 @@ def p_attr(p):
     elif len(p) == 5:
         if p[1].upper() == 'DESCRIPTION':
             p[0]['description'] = p[3]
-            
+
 def p_coll_param_list(p):
     """ coll_param_list : coll_param coll_param_list
                         | COMMA coll_param coll_param_list
@@ -256,7 +256,7 @@ def p_coll_param_list(p):
         p[0] = p[1] | p[2]
     elif len(p) == 4:
         p[0] = p[2] | p[3]
-        
+
 def p_coll_param(p):
     """ coll_param : QSTRING ":" QSTRING
                    | QSTRING ":" NUMBER
@@ -264,7 +264,7 @@ def p_coll_param(p):
     p[0] = dict()
     if len(p) > 2:
         p[0][p[1]] = p[3]
-        
+
 ###################################################
 ############         Partition         ############
 ###################################################
@@ -326,7 +326,7 @@ def p_release_part(p):
         'coll' : p[6],
         'parts' : [p[3]] + p[4]
     }
-    
+
 def p_part_list(p):
     """ part_list : empty
                   | COMMA STRING part_list
@@ -335,7 +335,7 @@ def p_part_list(p):
         p[0] = []
     else:
         p[0] = [p[2]] + p[3]
-    
+
 ###################################################
 ############           Index           ############
 ###################################################
@@ -431,7 +431,7 @@ def p_file_list(p):
         p[0] = [p[1]] + p[2]
     else:
         p[0] = [p[2]] + p[3]
-        
+
 def p_insert_coll(p):
     """ insert_coll : INSERT INTO STRING "(" field_name_list ")" VALUES values_list
     """
@@ -443,6 +443,7 @@ def p_insert_coll(p):
         new_dict = dict()
         for i in range(0, len(p[5])):
             new_dict[p[5][i]] = values[i]
+        data.append(new_dict)
     p[0]['data'] = data
 
 def p_insert_part(p):
@@ -457,6 +458,7 @@ def p_insert_part(p):
         new_dict = dict()
         for i in range(0, len(p[8])):
             new_dict[p[8][i]] = values[i]
+        data.append(new_dict)
     p[0]['data'] = data
 
 def p_upsert_coll(p):
@@ -470,6 +472,7 @@ def p_upsert_coll(p):
         new_dict = dict()
         for i in range(0, len(p[5])):
             new_dict[p[5][i]] = values[i]
+        data.append(new_dict)
     p[0]['data'] = data
 
 def p_upsert_part(p):
@@ -484,6 +487,7 @@ def p_upsert_part(p):
         new_dict = dict()
         for i in range(0, len(p[8])):
             new_dict[p[8][i]] = values[i]
+        data.append(new_dict)
     p[0]['data'] = data
 
 def p_field_name_list(p):
@@ -496,7 +500,7 @@ def p_field_name_list(p):
         p[0] = p[1] + p[2]
     elif len(p) == 4:
         p[0] = p[2] + p[3]
-    
+
 def p_field_name(p):
     """ field_name : STRING
                    | COUNT "(" "*" ")"
@@ -506,7 +510,7 @@ def p_field_name(p):
         p[0] = [ p[1] ]
     elif len(p) == 5:
         p[0] = [ 'count(*)' ]
-    
+
 def p_values_list(p):
     """ values_list : value_tuple values_list
                     | COMMA value_tuple values_list
@@ -517,12 +521,12 @@ def p_values_list(p):
         p[0] = p[1] + p[2]
     elif len(p) == 4:
         p[0] = p[2] + p[3]
-        
+
 def p_value_tuple(p):
     """ value_tuple : "(" value_list ")"
     """
     p[0] = [ p[2] ]
-    
+
 def p_value_list(p):
     """ value_list : value value_list
                    | COMMA value value_list
@@ -533,7 +537,7 @@ def p_value_list(p):
         p[0] = p[1] + p[2]
     elif len(p) == 4:
         p[0] = p[2] + p[3]
-        
+
 def p_value(p):
     """ value : single_value
               | "[" multi_value "]"
@@ -554,12 +558,12 @@ def p_json_value(p):
         p[0] = p[1] | p[2]
     elif len(p) == 4:
         p[0] = p[2] | p[3]
-    
+
 def p_kv_pair(p):
     """ kv_pair : QSTRING ":" value
     """
-    p[0] = { p[1] : p[3] }
-    
+    p[0] = { p[1] : p[3][0] }
+
 def p_single_value(p):
     """ single_value : NUMBER
                      | FLOAT
@@ -574,9 +578,9 @@ def p_multi_value(p):
     """
     p[0] = list()
     if len(p) == 3:
-        p[0] = p[1] + p[2]
+        p[0] = [p[1]] + p[2]
     elif len(p) == 4:
-        p[0] = p[2] + p[3]
+        p[0] = [p[2]] + p[3]
 
 ###################################################
 ############         Delete          ############
@@ -598,7 +602,7 @@ def p_delete_coll(p):
         p[0]['expr'] = p[4]['expr']
     elif len(p) == 10:
         p[0][p[6]] = p[8]
-        
+
 def p_delete_part(p):
     """ delete_part : DELETE FROM PARTITION STRING ON STRING where
                     | DELETE FROM PARTITION STRING ON STRING WITH "{" QSTRING ":" QSTRING "}"
@@ -793,10 +797,10 @@ def p_compare(p):
     """
     bool_expr = None
     if len(p) == 4:
-        # comparison, like, is, in
+        # comparison, like
 
-        # like
         if p[2] in ['LIKE', 'NOT LIKE']:
+            # like
             bool_expr = f'({p[1]} LIKE "{p[3]}")'
             if p[2].startswith('NOT'):
                 bool_expr = f'(NOT {bool_expr})'
@@ -810,6 +814,7 @@ def p_compare(p):
             bool_expr = f'({p[1]} {comp} {p[3][0]})'
     elif len(p) == 6:
         if p[2] in ['IN', 'NOT IN']:
+            # in
             bool_expr = f'({p[1]} IN {p[4]})'
             if p[2].startswith('NOT'):
                 bool_expr = f'(NOT {bool_expr})'
