@@ -55,10 +55,13 @@ reserved = {
     'between': 'BETWEEN',
     'not'   : 'NOT',
     'count' : 'COUNT',
+
 }
 
 tokens = (
     'COMPARISON',
+    'BOOLEAN',
+    'NULL',
     'STRING',
     'NUMBER',
     'QSTRING',
@@ -73,6 +76,22 @@ t_COMPARISON = r'<>|!=|>=|<=|='
 t_END = r';'
 t_COMMA = r','
 t_ignore = ' \t\n'
+
+
+def t_BOOLEAN(t):
+    r"(true|false)"
+    if t.value.upper() == "TRUE":
+        t.value = True
+    else:
+        t.value = False
+    return t
+
+
+def t_NULL(t):
+    r"(null)"
+    t.value = None
+    return t
+
 
 def t_STRING(t):
     r"[a-zA-Z][_a-zA-Z0-9]*"
@@ -97,6 +116,7 @@ def t_NUMBER(t):
     r"(0|-?[1-9]\d*)"
     t.value = int(t.value)
     return t
+
 
 def t_error(t):
     raise LexerException("Illegal character '%s' at line %s pos %s"

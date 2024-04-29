@@ -182,6 +182,7 @@ class TestInsert(unittest.TestCase):
     def test_simple_insert_parse_only(self):
         params = [("book_id, book_intro", "(1, [1.0, 2.0])"),
                   ("book_id, book_intro", "(1, [1.0, 2.0]), (2, [3.0, 2.0])"),
+                  ("book_id, book_intro", "(1, [true]), (2, [false])"),
                   ("book_id, book_intro", "(1, {'name': 'name1'}), (2, {'name': 'name2'})"),
                   ("book_id, book_intro", "(1, {'nested': {'name': 'name1', 'list': []}}),"
                                           "(2, {'nested': {'name': 'name2', 'list': ['1']}})"),

@@ -568,6 +568,8 @@ def p_single_value(p):
                      | QSTRING
                      | "{" json_value "}"
                      | "[" multi_value "]"
+                     | BOOLEAN
+                     | NULL
     """
     if len(p) == 2:
         p[0] = p[1]
