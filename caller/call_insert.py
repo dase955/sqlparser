@@ -53,7 +53,10 @@ def insert(query):
         count = collection.insert(data=data, partition_name=partition_name).insert_count
     else:
         count = collection.insert(data=data, partition_name=partition_name, timeout=timeout).insert_count
-    collection.flush()
+
+    # Milvus automatically triggers the flush() operation.
+    # In most cases, manual calls to this operation are not necessary.
+    # collection.flush()
     print('insert ' + str(count) + ' rows')
 
 def upsert(query):

@@ -540,8 +540,6 @@ def p_value_list(p):
 
 def p_value(p):
     """ value : single_value
-              | "[" multi_value "]"
-              | "{" json_value "}"
     """
     if len(p) == 2:
         p[0] = [ p[1] ]
@@ -568,8 +566,13 @@ def p_single_value(p):
     """ single_value : NUMBER
                      | FLOAT
                      | QSTRING
+                     | "{" json_value "}"
+                     | "[" multi_value "]"
     """
-    p[0] = p[1]
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 4:
+        p[0] = p[2]
 
 def p_multi_value(p):
     """ multi_value : single_value multi_value
@@ -860,7 +863,7 @@ def p_error(p):
 
 tokens = lexer.tokens
 
-DEBUG = False
+DEBUG = True
 
 L = lex.lex(module=lexer, optimize=False, debug=DEBUG)
 P = yacc.yacc(debug=DEBUG)

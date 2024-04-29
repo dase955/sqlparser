@@ -135,6 +135,50 @@ class TestInsert(unittest.TestCase):
             index_params=index_params
         )
 
+
+    def create_book_collection_json(self):
+        book_id = pymilvus.FieldSchema(
+            name="book_id",
+            dtype=pymilvus.DataType.INT64,
+            is_primary=True,
+        )
+        book_name = pymilvus.FieldSchema(
+            name="book_name",
+            dtype=pymilvus.DataType.VARCHAR,
+            max_length=200,
+            # The default value will be used if this field is left empty during data inserts or upserts.
+            # The data type of `default_value` must be the same as that specified in `dtype`.
+            default_value="Unknown"
+        )
+        json_col = pymilvus.FieldSchema(
+            name="json_col",
+            dtype=pymilvus.DataType.JSON,
+        )
+        book_intro = pymilvus.FieldSchema(
+            name="book_intro",
+            dtype=pymilvus.DataType.FLOAT_VECTOR,
+            dim=2
+        )
+        schema = pymilvus.CollectionSchema(
+            fields=[book_id, book_name, json_col, book_intro],
+            description="Test book search",
+            enable_dynamic_field=True
+        )
+        collection = pymilvus.Collection(
+            name=TEST_COLLECTION_NAME,
+            schema=schema,
+            using='default',
+        )
+        # build index
+        index_params = {
+            "metric_type": "L2",
+            "index_type": "IVF_FLAT",
+            "params": {"nlist": 1024}
+        }
+        collection.create_index(
+            field_name="book_intro",
+            index_params=index_params
+        )
     def test_simple_insert_parse_only(self):
         params = [("book_id, book_intro", "(1, [1.0, 2.0])"),
                   ("book_id, book_intro", "(1, [1.0, 2.0]), (2, [3.0, 2.0])"),
@@ -165,6 +209,29 @@ class TestInsert(unittest.TestCase):
         collection.load()
         query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
                                                                            'book_intro', 'word_count'])
+        print(f'query result: {query_result}')
+
+        self.dropTestCollection()
+
+    def test_insert_json(self):
+        self.create_book_collection_json()
+        params = [("book_id, book_intro, book_name, json_col", "(1, [1.0, 2.0], 'name1', {'name': 'name1'})"),
+                  ("book_id, book_intro, book_name, json_col", '(2, [1.0, 2.0], "name2", {"name": "name1"}),'
+                                                               "(3, [3.0, 2.0], 'name3', {'name': 'name1', 'list': [2], 'nested': {'name': 'name2', 'list': [{'name': 'name2'}, {'name': 'name2'}]}}),"
+                                                               "(4, [3.0, 2.0], 'name3', {'name': 'name1', 'list': [2], 'nested': {'name': 'name2', 'list': [[], []]}})"
+                   ),
+                  ]
+        for cols, tuples in params:
+            sql = f'insert into {TEST_COLLECTION_NAME}({cols}) values {tuples};'
+            print(f'sql: {sql}')
+            parsed_data = parse(sql)
+            print(f'parsed result: {parsed_data}')
+            INSERT_FUNC(parsed_data)
+
+        collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
+        collection.load()
+        query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
+                                                                           'book_intro', 'json_col'])
         print(f'query result: {query_result}')
 
         self.dropTestCollection()

@@ -609,7 +609,7 @@ SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} LIMIT {l
 
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+ - conditions：需要查询的数据的筛选条件，类似于SQL里的where子句；整个where子句都是可选的，如果没有筛选条件，则LIMIT选项是必须的。具体格式如下。 TODO
 
  - expr：这里的expr为Milvus bool expression，与Milvus文档里的expr的格式相同，与conditions只能二选一
 
