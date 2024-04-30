@@ -110,6 +110,7 @@ def t_STRING(t):
 def t_QSTRING(t):
     r"('[^']*')|(\"[^\"]*\")|(`[^`]*`)"
     t.value = t.value[1:-1]
+    # r"\"(?:[^\"\\]|\\[\"\\/bfnrt]|\\u[0-9a-fA-F]{4})*\"|'(?:[^'\\]|\\['\\/bfnrt]|\\u[0-9a-fA-F]{4})*'"
     return t
 
 def t_FLOAT(t):

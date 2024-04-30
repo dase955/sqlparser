@@ -18,6 +18,10 @@ INSERT_FUNC = caller.func_map['insert']
 UPSERT_FUNC = caller.func_map['upsert']
 
 
+def call_by_parsed_data(parsed_data):
+    caller.func_map[parsed_data['type']](parsed_data)
+
+
 class TestInsert(unittest.TestCase):
     def dropTestCollection(self):
         if pymilvus.utility.has_collection(TEST_COLLECTION_NAME, self.using, self.timeout):
@@ -135,7 +139,6 @@ class TestInsert(unittest.TestCase):
             index_params=index_params
         )
 
-
     def create_book_collection_json(self):
         book_id = pymilvus.FieldSchema(
             name="book_id",
@@ -179,6 +182,7 @@ class TestInsert(unittest.TestCase):
             field_name="book_intro",
             index_params=index_params
         )
+
     def test_simple_insert_parse_only(self):
         params = [("book_id, book_intro", "(1, [1.0, 2.0])"),
                   ("book_id, book_intro", "(1, [1.0, 2.0]), (2, [3.0, 2.0])"),
@@ -199,18 +203,19 @@ class TestInsert(unittest.TestCase):
                   ("book_id, book_intro,book_name, word_count", '(2, [1.0, 2.0], "name2", 324),'
                                                                 ' (3, [3.0, 2.0], "name3", 325)'),
                   ]
-        for cols, tuples in params:
-            sql = f'insert into {TEST_COLLECTION_NAME}({cols}) values {tuples};'
-            print(f'sql: {sql}')
-            parsed_data = parse(sql)
-            print(f'parsed result: {parsed_data}')
-            INSERT_FUNC(parsed_data)
+        for insert_type_str in ['insert', 'upsert']:
+            for cols, tuples in params:
+                sql = f'{insert_type_str} into {TEST_COLLECTION_NAME}({cols}) values {tuples};'
+                print(f'sql: {sql}')
+                parsed_data = parse(sql)
+                print(f'parsed result: {parsed_data}')
+                call_by_parsed_data(parsed_data)
 
-        collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
-        collection.load()
-        query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
-                                                                           'book_intro', 'word_count'])
-        print(f'query result: {query_result}')
+            collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
+            collection.load()
+            query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
+                                                                               'book_intro', 'word_count'])
+            print(f'query result: {query_result}')
 
         self.dropTestCollection()
 
@@ -222,17 +227,19 @@ class TestInsert(unittest.TestCase):
                                                                "(4, [3.0, 2.0], 'name3', {'name': 'name1', 'list': [2], 'nested': {'name': 'name2', 'list': [[], []]}})"
                    ),
                   ]
-        for cols, tuples in params:
-            sql = f'insert into {TEST_COLLECTION_NAME}({cols}) values {tuples};'
-            print(f'sql: {sql}')
-            parsed_data = parse(sql)
-            print(f'parsed result: {parsed_data}')
-            INSERT_FUNC(parsed_data)
 
-        collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
-        collection.load()
-        query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
-                                                                           'book_intro', 'json_col'])
-        print(f'query result: {query_result}')
+        for insert_type_str in ['insert', 'upsert']:
+            for cols, tuples in params:
+                sql = f'{insert_type_str} into {TEST_COLLECTION_NAME}({cols}) values {tuples};'
+                print(f'sql: {sql}')
+                parsed_data = parse(sql)
+                print(f'parsed result: {parsed_data}')
+                call_by_parsed_data(parsed_data)
+
+            collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
+            collection.load()
+            query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
+                                                                               'book_intro', 'json_col'])
+            print(f'query result: {query_result}')
 
         self.dropTestCollection()

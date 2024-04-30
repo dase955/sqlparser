@@ -82,8 +82,8 @@ def upsert(query):
     collection = Collection(name=collection_name, using=using)
         
     if timeout is None:
-        count = collection.upsert(data=data, partition_name=partition_name).insert_count
+        count = collection.upsert(data=data, partition_name=partition_name).upsert_count
     else:
-        count = collection.upsert(data=data, partition_name=partition_name, timeout=timeout).insert_count
-    collection.flush()
-    print('upsert ' + count + ' rows')
+        count = collection.upsert(data=data, partition_name=partition_name, timeout=timeout).upsert_count
+    # collection.flush()
+    print('upsert ' + str(count) + ' rows')

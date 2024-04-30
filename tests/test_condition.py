@@ -109,7 +109,7 @@ class TestCondition(unittest.TestCase):
         print(f'result: {result}')
 
     def test_simple_in(self):
-        lists = ["[1, 2.0, 3]", '["abc", "def", "\'"]']
+        lists = ["[1, 2.0, 3]", '["abc", "def", "\'"]', r'[""]']
         for in_list in lists:
             sql = f'delete from {TEST_COLLECTION_NAME} where book_id in {in_list};'
             print(f'sql: {sql}')
