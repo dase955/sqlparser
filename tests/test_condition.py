@@ -84,10 +84,15 @@ class TestCondition(unittest.TestCase):
     def test_simple_comparison(self):
         for comparator in ['=', '>', '<', '>=', '<=', '!=', '<>']:
             for value in [3, 5.0]:
-                sql = f"delete from {TEST_COLLECTION_NAME} where book_id {comparator} {value};"
-                print(f'sql: {sql}')
-                result = parse(sql)
-                print(f'result: {result}')
+                for direction in [True, False]:
+                    if direction:
+                        lvalue, rvalue = 'book_id', value
+                    else:
+                        rvalue, lvalue = 'book_id', value
+                    sql = f"delete from {TEST_COLLECTION_NAME} where {lvalue} {comparator} {rvalue};"
+                    print(f'sql: {sql}')
+                    result = parse(sql)
+                    print(f'result: {result}')
 
     def test_simple_between_and(self):
         tuples = [(3, 5.0), (3.0, 5)]
@@ -122,6 +127,22 @@ class TestCondition(unittest.TestCase):
                       ]
         for condition in conditions:
             sql = f'delete from {TEST_COLLECTION_NAME} where {condition};'
+            print(f'sql: {sql}')
+            result = parse(sql)
+            print(f'result: {result}')
+
+    def test_simple_and_or(self):
+        exprs = ['and', 'or']
+        for expr in exprs:
+            sql = f"delete from {TEST_COLLECTION_NAME} where book_id = 5 {expr} book_id =6;"
+            print(f'sql: {sql}')
+            result = parse(sql)
+            print(f'result: {result}')
+
+    def test_complex_conditions(self):
+        lists = ["[1, 2.0, 3]", '["abc", "def", "\'"]']
+        for in_list in lists:
+            sql = f'delete from {TEST_COLLECTION_NAME} where book_id in {in_list};'
             print(f'sql: {sql}')
             result = parse(sql)
             print(f'result: {result}')
