@@ -56,6 +56,13 @@ reserved = {
     'not'   : 'NOT',
     'count' : 'COUNT',
 
+    "json_contains": "JSON_CONTAINS",
+    "json_contains_all": "JSON_CONTAINS_ALL",
+    "json_contains_any": "JSON_CONTAINS_ANY",
+    "array_contains": "ARRAY_CONTAINS",
+    "array_contains_all": "ARRAY_CONTAINS_ALL",
+    "array_contains_any": "ARRAY_CONTAINS_ANY",
+    "array_length": "ARRAY_LENGTH",
 }
 
 tokens = (

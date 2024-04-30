@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 
 from ply import lex,yacc
 
@@ -755,6 +756,7 @@ def p_conditions(p):
                    | conditions OR conditions
                    | "(" conditions ")"
                    | compare
+                   | condition_function
     """
     bool_expr = None
     if len(p) == 2:
@@ -792,10 +794,29 @@ def p_offset(p):
         p[0] = p[2]
 
 
+def p_comparable_peeled_value(p):
+    """ comparable_peeled_value : value
+    """
+    p[0] = json.dumps(p[1][0])
+
+
+def p_comparable(p):
+    """ comparable : STRING
+                   | comparable_peeled_value
+                   | ARRAY_LENGTH "(" STRING ")"
+    """
+    if len(p) == 2:
+        # column_id and value
+        p[0] = p[1]
+    elif len(p) == 5:
+        # ARRAY_LENGTH(id)
+        p[0] = f"ARRAY_LENGTH({p[3]})"
+
+
 def p_compare(p):
-    """ compare : STRING COMPARISON value
-                | STRING ">" value
-                | STRING "<" value
+    """ compare : comparable COMPARISON comparable
+                | comparable ">" comparable
+                | comparable "<" comparable
                 | STRING like QSTRING
                 | STRING BETWEEN value AND value
                 | STRING in "[" value_list "]"
@@ -816,7 +837,7 @@ def p_compare(p):
                 comp = '!='
             elif comp == '=':
                 comp = '=='
-            bool_expr = f'({p[1]} {comp} {p[3][0]})'
+            bool_expr = f'({p[1]} {comp} {p[3]})'
     elif len(p) == 6:
         if p[2] in ['IN', 'NOT IN']:
             # in
@@ -852,6 +873,30 @@ def p_in(p):
         p[0] = 'NOT IN'
 
 
+def p_condition_function(p):
+    """ condition_function : condition_function_def "(" STRING COMMA value ")"
+    """
+    p[0] = dict()
+    if len(p) == 7:
+        json_value = json.dumps(p[5][0])
+        p[0]['func_name'] = p[1]
+        p[0]['expr'] = f'({p[1]}({p[3]}, {json_value}))'
+    else:
+        p[0]['func_name'] = p[1]
+        p[0]['expr'] = f'({p[1]}({p[3]}))'
+
+
+def p_condition_function_def(p):
+    """ condition_function_def : JSON_CONTAINS
+                               | JSON_CONTAINS_ALL
+                               | JSON_CONTAINS_ANY
+                               | ARRAY_CONTAINS
+                               | ARRAY_CONTAINS_ALL
+                               | ARRAY_CONTAINS_ANY
+    """
+    p[0] = p[1]
+
+
 # empty return None
 # so expression like (t : empty) => len(p)==2
 def p_empty(p):
@@ -865,7 +910,7 @@ def p_error(p):
 
 tokens = lexer.tokens
 
-DEBUG = True
+DEBUG = False
 
 L = lex.lex(module=lexer, optimize=False, debug=DEBUG)
 P = yacc.yacc(debug=DEBUG)

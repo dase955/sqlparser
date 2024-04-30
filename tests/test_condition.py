@@ -110,3 +110,18 @@ class TestCondition(unittest.TestCase):
             print(f'sql: {sql}')
             result = parse(sql)
             print(f'result: {result}')
+
+    def test_simple_function(self):
+        conditions = ["ARRAY_LENGTH(book_id) = 5",
+                      'ARRAY_CONTAINS(book_id, 1)',
+                      'ARRAY_CONTAINS_ALL(book_id, [1, 2, 8])',
+                      'ARRAY_CONTAINS_ANY(book_id, [6, 9])',
+                      'JSON_CONTAINS(book_id, 1)',
+                      'JSON_CONTAINS_ALL(book_id, [1, 2, 8])',
+                      'JSON_CONTAINS_ANY(book_id, [6, 9])',
+                      ]
+        for condition in conditions:
+            sql = f'delete from {TEST_COLLECTION_NAME} where {condition};'
+            print(f'sql: {sql}')
+            result = parse(sql)
+            print(f'result: {result}')
