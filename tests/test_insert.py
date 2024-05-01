@@ -13,6 +13,8 @@ import os
 TEST_DATABASE_NAME = "TEST_DATABASE"
 # 测试使用的 collection
 TEST_COLLECTION_NAME = "TEST_COLLECTION"
+# 测试使用的 partition
+TEST_PARTITION_NAME = "TEST_PARTITION"
 
 INSERT_FUNC = caller.func_map['insert']
 UPSERT_FUNC = caller.func_map['upsert']
@@ -109,7 +111,6 @@ class TestInsert(unittest.TestCase):
             # The default value will be used if this field is left empty during data inserts or upserts.
             # The data type of `default_value` must be the same as that specified in `dtype`.
             default_value=9999,
-            is_partition_key=True
         )
         book_intro = pymilvus.FieldSchema(
             name="book_intro",
@@ -126,7 +127,6 @@ class TestInsert(unittest.TestCase):
             schema=schema,
             using='default',
             num_shards=2,
-            num_partitions=2
         )
         # build index
         index_params = {
@@ -240,6 +240,29 @@ class TestInsert(unittest.TestCase):
             collection.load()
             query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
                                                                                'book_intro', 'json_col'])
+            print(f'query result: {query_result}')
+
+        self.dropTestCollection()
+
+    def test_simple_insert_book_partition(self):
+        self.create_book_collection()
+        collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
+        partition = collection.create_partition(TEST_PARTITION_NAME)
+        params = [("book_id, book_intro, book_name, word_count", "(1, [1.0, 2.0], 'name1', 323)"),
+                  ("book_id, book_intro,book_name, word_count", '(2, [1.0, 2.0], "name2", 324),'
+                                                                ' (3, [3.0, 2.0], "name3", 325)'),
+                  ]
+        for insert_type_str in ['insert', 'upsert']:
+            for cols, tuples in params:
+                sql = f'{insert_type_str} into partition {TEST_PARTITION_NAME} on {TEST_COLLECTION_NAME}({cols}) values {tuples};'
+                print(f'sql: {sql}')
+                parsed_data = parse(sql)
+                print(f'parsed result: {parsed_data}')
+                call_by_parsed_data(parsed_data)
+
+            collection.load()
+            query_result = partition.query(expr="", limit=100, output_fields=['book_id', 'book_name',
+                                                                              'book_intro', 'word_count'])
             print(f'query result: {query_result}')
 
         self.dropTestCollection()
