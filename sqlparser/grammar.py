@@ -752,7 +752,8 @@ def p_where(p):
 
 
 def p_conditions(p):
-    """ conditions : conditions AND conditions
+    """ conditions : NOT conditions
+                   | conditions AND conditions
                    | conditions OR conditions
                    | "(" conditions ")"
                    | compare
@@ -762,6 +763,9 @@ def p_conditions(p):
     if len(p) == 2:
         # compare
         bool_expr = p[1]['expr']
+    elif len(p) == 3:
+        # not
+        bool_expr = f'NOT {p[2]["expr"]}'
     elif len(p) == 4:
         if '(' in p:
             # brackets
@@ -864,6 +868,7 @@ def p_compare(p):
                 | comparable "<" comparable
                 | STRING like QSTRING
                 | STRING BETWEEN value AND value
+                | STRING NOT BETWEEN value AND value
                 | STRING in "[" value_list "]"
     """
     bool_expr = None
@@ -892,6 +897,9 @@ def p_compare(p):
         else:
             # between and
             bool_expr = f'({p[3][0]} <= {p[1]} <= {p[5][0]})'
+    elif len(p) == 7:
+        # not between and
+        bool_expr = f'(not ({p[4][0]} <= {p[1]} <= {p[6][0]}))'
 
     p[0] = {
         'expr': bool_expr

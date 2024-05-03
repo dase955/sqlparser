@@ -97,21 +97,33 @@ class TestCondition(unittest.TestCase):
     def test_simple_between_and(self):
         tuples = [(3, 5.0), (3.0, 5)]
         for lvalue, rvalue in tuples:
-            sql = f"delete from {TEST_COLLECTION_NAME} where book_id between {lvalue} and {rvalue};"
+            for not_expr in ["not", ""]:
+                sql = f"delete from {TEST_COLLECTION_NAME} where book_id {not_expr} between {lvalue} and {rvalue};"
+                print(f'sql: {sql}')
+                result = parse(sql)
+                print(f'result: {result}')
+
+    def test_simple_like(self):
+        for not_expr in ["not", ""]:
+            sql = f'delete from {TEST_COLLECTION_NAME} where book_id {not_expr} like "prefix%";'
             print(f'sql: {sql}')
             result = parse(sql)
             print(f'result: {result}')
 
-    def test_simple_like(self):
-        sql = f'delete from {TEST_COLLECTION_NAME} where book_id like "prefix%";'
-        print(f'sql: {sql}')
-        result = parse(sql)
-        print(f'result: {result}')
-
     def test_simple_in(self):
         lists = ["[1, 2.0, 3]", '["abc", "def", "\'"]', r'[""]']
         for in_list in lists:
-            sql = f'delete from {TEST_COLLECTION_NAME} where book_id in {in_list};'
+            for not_expr in ["not", ""]:
+                sql = f'delete from {TEST_COLLECTION_NAME} where book_id {not_expr} in {in_list};'
+                print(f'sql: {sql}')
+                result = parse(sql)
+                print(f'result: {result}')
+
+    def test_simple_not(self):
+        expr_list = ['book_id > 5', 'book_id = 7', 'ARRAY_LENGTH(book_id) = 8', 'ARRAY_CONTAINS(book_id, 2)',
+                     'book_id not between 1 and 5']
+        for expr in expr_list:
+            sql = f'delete from {TEST_COLLECTION_NAME} where not {expr};'
             print(f'sql: {sql}')
             result = parse(sql)
             print(f'result: {result}')
@@ -138,6 +150,12 @@ class TestCondition(unittest.TestCase):
             print(f'sql: {sql}')
             result = parse(sql)
             print(f'result: {result}')
+
+    def test_both_and_or(self):
+        sql = f"delete from {TEST_COLLECTION_NAME} where book_id = 4 and book_id = 5 or book_id = 6 and book_id = 7;"
+        print(f'sql: {sql}')
+        result = parse(sql)
+        print(f'result: {result}')
 
     def test_complex_conditions(self):
         lists = ["[1, 2.0, 3]", '["abc", "def", "\'"]']
