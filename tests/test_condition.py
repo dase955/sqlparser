@@ -146,3 +146,11 @@ class TestCondition(unittest.TestCase):
             print(f'sql: {sql}')
             result = parse(sql)
             print(f'result: {result}')
+
+    def test_simple_arithmetic(self):
+        exprs = ['30 / 2 - 8', '(5*8/8)', '5*(8/8)', '5**(8/8)', '30 / 2 + 8']
+        for expr in exprs:
+            sql = f"delete from {TEST_COLLECTION_NAME} where book_id = {expr};"
+            print(f'sql: {sql}')
+            result = parse(sql)
+            print(f'result: {result}')

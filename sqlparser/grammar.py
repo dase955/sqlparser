@@ -794,20 +794,65 @@ def p_offset(p):
         p[0] = p[2]
 
 
-def p_comparable_peeled_value(p):
-    """ comparable_peeled_value : value
+def p_binary_arith_op(p):
+    """ binary_arith_op : "*" "*"
+                        | "+"
+                        | "-"
+                        | "*"
+                        | "/"
+                        | "%"
     """
-    p[0] = json.dumps(p[1][0])
+    if len(p) == 3:
+        # **
+        p[0] = "**"
+    elif len(p) == 2:
+        p[0] = p[1]
+
+
+def p_unary_arith_op(p):
+    """ unary_arith_op : "+"
+                       | "-"
+    """
+    if len(p) == 3:
+        # **
+        p[0] = "**"
+    elif len(p) == 2:
+        p[0] = p[1]
+
+
+def p_constant_expr(p):
+    """ constant_expr : value
+                      | constant_expr binary_arith_op constant_expr
+                      | unary_arith_op constant_expr
+                      | "(" constant_expr ")"
+    """
+    # 不在算术表达式中添加括号，直接将原表达式传入milvus，以此回避运算符优先级等问题
+    if len(p) == 2:
+        p[0] = json.dumps(p[1][0])
+    elif len(p) == 3:
+        # unary
+        p[0] = f"{p[1]}{p[2]}"
+    elif len(p) == 4:
+        if "(" in p:
+            # brackets
+            p[0] = f"({p[2]})"
+        else:
+            # binary
+            p[0] = f"{p[1]} {p[2]} {p[3]}"
 
 
 def p_comparable(p):
     """ comparable : STRING
-                   | comparable_peeled_value
+                   | constant_expr
                    | ARRAY_LENGTH "(" STRING ")"
+                   | "(" comparable ")"
     """
     if len(p) == 2:
         # column_id and value
         p[0] = p[1]
+    elif len(p) == 4:
+        # brackets
+        p[0] = f"({p[2]})"
     elif len(p) == 5:
         # ARRAY_LENGTH(id)
         p[0] = f"ARRAY_LENGTH({p[3]})"

@@ -78,7 +78,7 @@ tokens = (
 ) + tuple(set(reserved.values()))
 
 # 原来的<和>移到literals里了，COMPARISON里少了这两个符号，写条件时需要单独做下判断
-literals = '()<>{}@%.*[]:-^'
+literals = '()<>{}@%.*[]:-^/+'
 t_COMPARISON = r'<>|!=|>=|<=|='
 t_END = r';'
 t_COMMA = r','
