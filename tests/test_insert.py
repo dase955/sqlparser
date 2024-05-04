@@ -91,11 +91,12 @@ class TestInsert(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def create_book_collection(self):
+    def create_book_collection(self, pk_auto_id=False):
         book_id = pymilvus.FieldSchema(
             name="book_id",
             dtype=pymilvus.DataType.INT64,
             is_primary=True,
+            auto_id=pk_auto_id
         )
         book_name = pymilvus.FieldSchema(
             name="book_name",
@@ -183,6 +184,38 @@ class TestInsert(unittest.TestCase):
             index_params=index_params
         )
 
+    def create_custom_collection(self, custom_field_schema: pymilvus.FieldSchema):
+        id_field = pymilvus.FieldSchema(
+            name="id_field",
+            dtype=pymilvus.DataType.INT64,
+            is_primary=True,
+        )
+        vector_field = pymilvus.FieldSchema(
+            name="vector_field",
+            dtype=pymilvus.DataType.BINARY_VECTOR,
+            dim=16
+        )
+        schema = pymilvus.CollectionSchema(
+            fields=[id_field, vector_field, custom_field_schema],
+            description="custom field collection",
+        )
+        collection = pymilvus.Collection(
+            name=TEST_COLLECTION_NAME,
+            schema=schema,
+            using='default',
+            num_shards=2,
+        )
+        # build index
+        index_params = {
+            "metric_type": "HAMMING",
+            "index_type": "BIN_FLAT",
+            "params": {"nlist": 1024}
+        }
+        collection.create_index(
+            field_name="vector_field",
+            index_params=index_params
+        )
+
     def test_simple_insert_parse_only(self):
         params = [("book_id, book_intro", "(1, [1.0, 2.0])"),
                   ("book_id, book_intro", "(1, [1.0, 2.0]), (2, [3.0, 2.0])"),
@@ -215,6 +248,29 @@ class TestInsert(unittest.TestCase):
             collection.load()
             query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
                                                                                'book_intro', 'word_count'])
+            print(f'query result: {query_result}')
+
+        self.dropTestCollection()
+
+    def test_simple_insert_book_auto_id_dynamic_schema(self):
+        self.create_book_collection(pk_auto_id=True)
+        params = [
+            ("book_intro, book_name, word_count", "([1.0, 2.0], 'name1', 323)"),
+            ("book_intro, book_name, word_count", '([1.0, 2.0], "name2", 324),'
+                                                  '([3.0, 2.0], "name3", 325)'),
+            ("book_intro, book_name, word_count, dyn_field", "([1.0, 2.0], 'name4', 323, 4)"),
+        ]
+        for cols, tuples in params:
+            sql = f'insert into {TEST_COLLECTION_NAME}({cols}) values {tuples};'
+            print(f'sql: {sql}')
+            parsed_data = parse(sql)
+            print(f'parsed result: {parsed_data}')
+            call_by_parsed_data(parsed_data)
+
+            collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
+            collection.load()
+            query_result = collection.query(expr="", limit=100, output_fields=['book_id', 'book_name',
+                                                                               'book_intro', 'word_count', 'dyn_field'])
             print(f'query result: {query_result}')
 
         self.dropTestCollection()
