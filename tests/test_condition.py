@@ -172,3 +172,11 @@ class TestCondition(unittest.TestCase):
             print(f'sql: {sql}')
             result = parse(sql)
             print(f'result: {result}')
+
+    def test_subscript(self):
+        exprs = ['arr[0]', 'obj["key"]', 'obj["key"][0]']
+        for expr in exprs:
+            sql = f"delete from {TEST_COLLECTION_NAME} where {expr} = 5;"
+            print(f'sql: {sql}')
+            result = parse(sql)
+            print(f'result: {result}')

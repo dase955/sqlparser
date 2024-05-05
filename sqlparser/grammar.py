@@ -841,10 +841,26 @@ def p_constant_expr(p):
             p[0] = f"{p[1]} {p[2]} {p[3]}"
 
 
+def p_identifier(p):
+    """ identifier : STRING
+                   | identifier "[" NUMBER "]"
+                   | identifier "[" QSTRING "]"
+    """
+    if len(p) == 2:
+        # simple name
+        p[0] = p[1]
+    elif len(p) == 5:
+        if isinstance(p[3], str):
+            p[0] = f'{p[1]}["{p[3]}"]'
+        else:
+            # number
+            p[0] = f'{p[1]}[{p[3]}]'
+
+
 def p_comparable(p):
-    """ comparable : STRING
+    """ comparable : identifier
                    | constant_expr
-                   | ARRAY_LENGTH "(" STRING ")"
+                   | ARRAY_LENGTH "(" identifier ")"
                    | "(" comparable ")"
     """
     if len(p) == 2:
@@ -862,10 +878,10 @@ def p_compare(p):
     """ compare : comparable COMPARISON comparable
                 | comparable ">" comparable
                 | comparable "<" comparable
-                | STRING like QSTRING
-                | STRING BETWEEN value AND value
-                | STRING NOT BETWEEN value AND value
-                | STRING in "[" value_list "]"
+                | identifier like QSTRING
+                | identifier BETWEEN value AND value
+                | identifier NOT BETWEEN value AND value
+                | identifier in "[" value_list "]"
     """
     bool_expr = None
     if len(p) == 4:
@@ -923,7 +939,7 @@ def p_in(p):
 
 
 def p_condition_function(p):
-    """ condition_function : condition_function_def "(" STRING COMMA value ")"
+    """ condition_function : condition_function_def "(" identifier COMMA value ")"
     """
     p[0] = dict()
     if len(p) == 7:
