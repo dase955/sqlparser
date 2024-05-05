@@ -20,6 +20,19 @@ INSERT_FUNC = caller.func_map['insert']
 UPSERT_FUNC = caller.func_map['upsert']
 
 
+def deep_merge_dicts(dict1, dict2):
+    """
+    Recursively merge two dictionaries.
+    """
+    result = dict1.copy()
+    for key, value in dict2.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = deep_merge_dicts(result[key], value)
+        else:
+            result[key] = value
+    return result
+
+
 def call_by_parsed_data(parsed_data):
     caller.func_map[parsed_data['type']](parsed_data)
 
@@ -322,3 +335,76 @@ class TestInsert(unittest.TestCase):
             print(f'query result: {query_result}')
 
         self.dropTestCollection()
+
+    def test_insert_binary_vector_scalar_types(self):
+        field_name = 'custom'
+        # tuples for test, (field_schema, data_for_insertion, dict_to_check)
+        field_tuples = [
+            (pymilvus.FieldSchema(field_name, pymilvus.DataType.INT8), '1', {field_name: 1}),
+            (pymilvus.FieldSchema(field_name, pymilvus.DataType.INT16), '1', {field_name: 1}),
+            (pymilvus.FieldSchema(field_name, pymilvus.DataType.INT32), '1', {field_name: 1}),
+            (pymilvus.FieldSchema(field_name, pymilvus.DataType.INT64), '1', {field_name: 1}),
+            (pymilvus.FieldSchema(field_name, pymilvus.DataType.BOOL), 'true', {field_name: True}),
+            (pymilvus.FieldSchema(field_name, pymilvus.DataType.FLOAT), '1.5', {field_name: 1.5}),
+            (pymilvus.FieldSchema(field_name, pymilvus.DataType.DOUBLE), '3.2', {field_name: 3.2}),
+            (pymilvus.FieldSchema(field_name, pymilvus.DataType.JSON), '{"key": "value"}', {field_name: {"key": "value"}}),
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.VARCHAR, max_length=63333), '"test"', {field_name: "test"}),
+        ]
+
+        for field_schema, value_str, subdict in field_tuples:
+            self.create_custom_collection(field_schema)
+            collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
+            for insert_type_str in ['insert', 'upsert']:
+                cols = f'id_field, vector_field, {field_name}'
+                values = f'1, [1, 255], {value_str}'
+                sql = f'{insert_type_str} into {TEST_COLLECTION_NAME}({cols}) values ({values});'
+                print(f'sql: {sql}')
+                parsed_data = parse(sql)
+                print(f'parsed result: {parsed_data}')
+                call_by_parsed_data(parsed_data)
+
+                collection.load()
+                query_result = collection.query(expr="", limit=100, output_fields=['id_field', 'vector_field', field_name])
+                print(f'query result: {query_result}')
+
+                self.assertEqual(len(query_result), 1, "Incorrect result length.")
+                merged_dict = deep_merge_dicts(query_result[0], {'id_field': 1, 'vector_field': [b'\x01\xff']} | subdict)
+                self.assertDictEqual(merged_dict, query_result[0], "Incorrect query result.")
+
+            self.dropTestCollection()
+
+    def test_insert_binary_vector_array_types(self):
+        field_name = 'custom'
+        # tuples for test, (field_schema, data_for_insertion, dict_to_check)
+        field_tuples = [
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.ARRAY, max_capacity=4000, element_type=pymilvus.DataType.INT8), '[1]', {field_name: [1]}),
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.ARRAY, max_capacity=4000, element_type=pymilvus.DataType.INT16), '[1]', {field_name: [1]}),
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.ARRAY, max_capacity=4000, element_type=pymilvus.DataType.INT32), '[1]', {field_name: [1]}),
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.ARRAY, max_capacity=4000, element_type=pymilvus.DataType.INT64), '[1]', {field_name: [1]}),
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.ARRAY, max_capacity=4000, element_type=pymilvus.DataType.BOOL), '[true]', {field_name: [True]}),
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.ARRAY, max_capacity=4000, element_type=pymilvus.DataType.FLOAT), '[1.5]', {field_name: [1.5]}),
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.ARRAY, max_capacity=4000, element_type=pymilvus.DataType.DOUBLE), '[3.2]', {field_name: [3.2]}),
+            (pymilvus.FieldSchema(name=field_name, dtype=pymilvus.DataType.ARRAY, max_capacity=4000, element_type=pymilvus.DataType.VARCHAR, max_length=63333), '["test"]', {field_name: ["test"]}),
+        ]
+
+        for field_schema, value_str, subdict in field_tuples:
+            self.create_custom_collection(field_schema)
+            collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
+            for insert_type_str in ['insert', 'upsert']:
+                cols = f'id_field, vector_field, {field_name}'
+                values = f'1, [1, 255], {value_str}'
+                sql = f'{insert_type_str} into {TEST_COLLECTION_NAME}({cols}) values ({values});'
+                print(f'sql: {sql}')
+                parsed_data = parse(sql)
+                print(f'parsed result: {parsed_data}')
+                call_by_parsed_data(parsed_data)
+
+                collection.load()
+                query_result = collection.query(expr="", limit=100, output_fields=['id_field', 'vector_field', field_name])
+                print(f'query result: {query_result}')
+
+                self.assertEqual(len(query_result), 1, "Incorrect result length.")
+                merged_dict = deep_merge_dicts(query_result[0], {'id_field': 1, 'vector_field': [b'\x01\xff']} | subdict)
+                self.assertDictEqual(merged_dict, query_result[0], "Incorrect query result.")
+
+            self.dropTestCollection()

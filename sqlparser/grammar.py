@@ -817,11 +817,7 @@ def p_unary_arith_op(p):
     """ unary_arith_op : "+"
                        | "-"
     """
-    if len(p) == 3:
-        # **
-        p[0] = "**"
-    elif len(p) == 2:
-        p[0] = p[1]
+    p[0] = p[1]
 
 
 def p_constant_expr(p):
