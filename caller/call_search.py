@@ -44,10 +44,7 @@ def search(query):
     output_fields = [] # set this list according to field_list
     
     collection = Collection(collection_name, using=using)
-    if '*' in field_list:
-        output_fields = [field.to_dict()['name'] for field in collection.schema.fields]
-    else:
-        output_fields = field_list
+    output_fields = field_list
 
     if timeout is None:
         result = collection.search(data=data, anns_field=anns_field, param=param, limit=limit, expr=expr, 

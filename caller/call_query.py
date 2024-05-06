@@ -31,10 +31,7 @@ def query(query):
     result_list = None
     output_fields = None # set this list according to field_list
     collection = Collection(collection_name, using=using)
-    if '*' in field_list:
-        output_fields = [field.to_dict()['name'] for field in collection.schema.fields]
-    else:
-        output_fields = field_list
+    output_fields = field_list
 
     if timeout is None:
         result_list = collection.query(expr=expr, output_fields=output_fields, partition_names=partition_names,
