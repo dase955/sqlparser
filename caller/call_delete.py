@@ -26,4 +26,4 @@ def delete(query):
         count = collection.delete(expr=expr, partition_name=partition_name).delete_count
     else:
         count = collection.delete(expr=expr, partition_name=partition_name, timeout=timeout).delete_count
-    print('delete ' + count + ' rows')
+    print('delete ' + str(count) + ' rows')

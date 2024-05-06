@@ -745,7 +745,7 @@ def p_where(p):
               | empty
     """
     if len(p) == 2:
-        p[0] = str()
+        p[0] = {}
     elif len(p) == 3:
         p[0] = p[2]
 
@@ -765,15 +765,15 @@ def p_conditions(p):
         bool_expr = p[1]['expr']
     elif len(p) == 3:
         # not
-        bool_expr = f'NOT {p[2]["expr"]}'
+        bool_expr = f'not {p[2]["expr"]}'
     elif len(p) == 4:
         if '(' in p:
             # brackets
             bool_expr = f'({p[2]["expr"]})'
         elif p[2].upper() == 'AND':
-            bool_expr = f'({p[1]["expr"]}) AND ({p[3]["expr"]})'
+            bool_expr = f'{p[1]["expr"]} and {p[3]["expr"]}'
         elif p[2].upper() == 'OR':
-            bool_expr = f'({p[1]["expr"]}) OR ({p[3]["expr"]})'
+            bool_expr = f'{p[1]["expr"]} or {p[3]["expr"]}'
 
     p[0] = {
         'expr': bool_expr
@@ -891,7 +891,7 @@ def p_compare(p):
             # like
             bool_expr = f'({p[1]} LIKE "{p[3]}")'
             if p[2].startswith('NOT'):
-                bool_expr = f'(NOT {bool_expr})'
+                bool_expr = f'(not {bool_expr})'
         else:
             # comparison
             comp = p[2]
@@ -901,11 +901,11 @@ def p_compare(p):
                 comp = '=='
             bool_expr = f'({p[1]} {comp} {p[3]})'
     elif len(p) == 6:
-        if p[2] in ['IN', 'NOT IN']:
+        if p[2] in ['in', 'not in']:
             # in
-            bool_expr = f'({p[1]} IN {p[4]})'
-            if p[2].startswith('NOT'):
-                bool_expr = f'(NOT {bool_expr})'
+            bool_expr = f'({p[1]} in {p[4]})'
+            if p[2].startswith('not'):
+                bool_expr = f'(not {bool_expr})'
         else:
             # between and
             bool_expr = f'({p[3][0]} <= {p[1]} <= {p[5][0]})'
@@ -933,9 +933,9 @@ def p_in(p):
            | NOT IN
     """
     if len(p) == 2:
-        p[0] = 'IN'
+        p[0] = 'in'
     else:
-        p[0] = 'NOT IN'
+        p[0] = 'not in'
 
 
 def p_condition_function(p):
@@ -959,7 +959,7 @@ def p_condition_function_def(p):
                                | ARRAY_CONTAINS_ALL
                                | ARRAY_CONTAINS_ANY
     """
-    p[0] = p[1]
+    p[0] = p[1].lower()
 
 
 # empty return None
