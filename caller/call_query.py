@@ -42,3 +42,5 @@ def query(query):
         
     for result in result_list:
         print(result)
+
+    return result_list

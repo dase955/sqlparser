@@ -645,7 +645,7 @@ def p_query_coll(p):
     if len(p) == 13:
         p[0][p[9]] = p[11]
     elif len(p) == 8:
-        p[0]['expr'] = p[7]
+        p[0]['expr'] = p[7]['expr']
 
 def p_query_part(p):
     """ query_part : SELECT field_name_list FROM PARTITION part_name_list ON STRING limit offset WITH "{" QSTRING ":" QSTRING "}"
@@ -661,7 +661,7 @@ def p_query_part(p):
     if len(p) == 16:
         p[0][p[12]] = p[14]
     elif len(p) == 11:
-        p[0]['expr'] = p[10]
+        p[0]['expr'] = p[10]['expr']
 
 def p_part_name_list(p):
     """ part_name_list : field_name_list
@@ -688,7 +688,7 @@ def p_search_coll(p):
     p[0]['data'] = p[11]
     p[0]['limit'] = p[12]
     # p[0]['offset'] = p[13]
-    p[0]['expr'] = p[14]
+    p[0]['expr'] = p[14]['expr']
     p[0]['parts'] = None
     if 'expr' in p[17]:
         p[0]['expr'] = p[17]['expr']
@@ -713,7 +713,7 @@ def p_search_part(p):
     p[0]['data'] = p[14]
     p[0]['limit'] = p[15]
     # p[0]['offset'] = p[16]
-    p[0]['expr'] = p[17]
+    p[0]['expr'] = p[17]['expr']
     p[0]['parts'] = p[5]
     if 'expr' in p[20]:
         p[0]['expr'] = p[20]['expr']
@@ -745,7 +745,7 @@ def p_where(p):
               | empty
     """
     if len(p) == 2:
-        p[0] = {}
+        p[0] = {'expr': ''}
     elif len(p) == 3:
         p[0] = p[2]
 

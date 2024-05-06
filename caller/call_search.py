@@ -68,3 +68,5 @@ def search(query):
     
     for result_dict in result_dict_list:
         print(result_dict)
+
+    return result
