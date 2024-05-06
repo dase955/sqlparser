@@ -19,7 +19,7 @@ def call_by_parsed_data(parsed_data):
     return caller.func_map[parsed_data['type']](parsed_data)
 
 
-class TestQuery(unittest.TestCase):
+class TestSearch(unittest.TestCase):
     def dropTestCollection(self):
         if pymilvus.utility.has_collection(TEST_COLLECTION_NAME, self.using, self.timeout):
             pymilvus.utility.drop_collection(TEST_COLLECTION_NAME, self.timeout, self.using)
@@ -213,17 +213,26 @@ class TestQuery(unittest.TestCase):
         collection.flush()
 
         for expr, expected_list in testcase_tuples:
-            sql = f"select * from {TEST_COLLECTION_NAME} where {expr};"
+            with_params = '{"metric_type":"L2", "nprobe":10}'
+            sql = f"select * from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0], [3.0, 4.0]] limit 20 where {expr} WITH {with_params};"
             print(f'sql: {sql}')
             parsed_data = parse(sql)
             print(f'parsed data: {parsed_data}')
 
-            query_result = call_by_parsed_data(parsed_data)
+            query_result: pymilvus.SearchResult = call_by_parsed_data(parsed_data)
             print(f'query result: {query_result}')
 
-            remaining_ids = [row['book_id'] for row in query_result]
-            self.assertListEqual(expected_list, remaining_ids,
-                                 "The query result list is not equal to the expected list")
+            self.assertEqual(len(query_result), 2)
+            for hits in query_result:
+                self.assertIsInstance(hits, pymilvus.Hits)
+                hits: pymilvus.Hits = hits
+                for hit in hits:
+                    self.assertIsInstance(hit, pymilvus.Hit)
+                    hit: pymilvus.Hit = hit
+                    self.assertTrue('book_id' in hit.fields)
+                    self.assertTrue('book_name' in hit.fields)
+                    self.assertTrue('book_intro' in hit.fields)
+                    self.assertTrue('word_count' in hit.fields)
 
     def test_simple_between_and(self):
         # (expr, expected_id_list)
@@ -238,7 +247,8 @@ class TestQuery(unittest.TestCase):
         collection.flush()
 
         for expr, expected_list in testcase_tuples:
-            sql = f"select * from {TEST_COLLECTION_NAME} where {expr};"
+            with_params = '{"metric_type":"L2", "nprobe":10}'
+            sql = f"select * from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0]] limit 20 where {expr} with {with_params};"
             print(f'sql: {sql}')
             parsed_data = parse(sql)
             print(f'parsed data: {parsed_data}')
@@ -246,9 +256,12 @@ class TestQuery(unittest.TestCase):
             query_result = call_by_parsed_data(parsed_data)
             print(f'query result: {query_result}')
 
-            remaining_ids = [row['book_id'] for row in query_result]
-            self.assertListEqual(expected_list, remaining_ids,
-                                 "The query result list is not equal to the expected list")
+            self.assertEqual(len(query_result), 1)
+            for hits in query_result:
+                self.assertIsInstance(hits, pymilvus.Hits)
+                hits: pymilvus.Hits = hits
+                for hit in hits:
+                    self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_simple_like(self):
         # (expr, expected_id_list)
@@ -265,7 +278,8 @@ class TestQuery(unittest.TestCase):
         collection.flush()
 
         for expr, expected_list in testcase_tuples:
-            sql = f"select * from {TEST_COLLECTION_NAME} where {expr};"
+            with_params = '{"metric_type":"L2", "nprobe":10}'
+            sql = f"select * from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0]] limit 20 where {expr} with {with_params};"
             print(f'sql: {sql}')
             parsed_data = parse(sql)
             print(f'parsed data: {parsed_data}')
@@ -273,9 +287,12 @@ class TestQuery(unittest.TestCase):
             query_result = call_by_parsed_data(parsed_data)
             print(f'query result: {query_result}')
 
-            remaining_ids = [row['book_id'] for row in query_result]
-            self.assertListEqual(expected_list, remaining_ids,
-                                 "The query result list is not equal to the expected list")
+            self.assertEqual(len(query_result), 1)
+            for hits in query_result:
+                self.assertIsInstance(hits, pymilvus.Hits)
+                hits: pymilvus.Hits = hits
+                for hit in hits:
+                    self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_simple_in(self):
         # (expr, expected_id_list)
@@ -290,7 +307,8 @@ class TestQuery(unittest.TestCase):
         collection.flush()
 
         for expr, expected_list in testcase_tuples:
-            sql = f"select * from {TEST_COLLECTION_NAME} where {expr};"
+            with_params = '{"metric_type":"L2", "nprobe":10}'
+            sql = f"select * from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0]] limit 20 where {expr} with {with_params};"
             print(f'sql: {sql}')
             parsed_data = parse(sql)
             print(f'parsed data: {parsed_data}')
@@ -298,9 +316,12 @@ class TestQuery(unittest.TestCase):
             query_result = call_by_parsed_data(parsed_data)
             print(f'query result: {query_result}')
 
-            remaining_ids = [row['book_id'] for row in query_result]
-            self.assertListEqual(expected_list, remaining_ids,
-                                 "The query result list is not equal to the expected list")
+            self.assertEqual(len(query_result), 1)
+            for hits in query_result:
+                self.assertIsInstance(hits, pymilvus.Hits)
+                hits: pymilvus.Hits = hits
+                for hit in hits:
+                    self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_functions(self):
         # (expr, expected_id_list)
@@ -319,7 +340,8 @@ class TestQuery(unittest.TestCase):
         collection.flush()
 
         for expr, expected_list in testcase_tuples:
-            sql = f"select * from {TEST_COLLECTION_NAME} where {expr};"
+            with_params = '{"metric_type":"HAMMING", "nprobe":10}'
+            sql = f"select * from {TEST_COLLECTION_NAME} order by vector_field <-> [[1, 255]] limit 20 where {expr} with {with_params};"
             print(f'sql: {sql}')
             parsed_data = parse(sql)
             print(f'parsed data: {parsed_data}')
@@ -327,9 +349,12 @@ class TestQuery(unittest.TestCase):
             query_result = call_by_parsed_data(parsed_data)
             print(f'query result: {query_result}')
 
-            remaining_ids = [row['id_field'] for row in query_result]
-            self.assertListEqual(expected_list, remaining_ids,
-                                 "The query result list is not equal to the expected list")
+            self.assertEqual(len(query_result), 1)
+            for hits in query_result:
+                self.assertIsInstance(hits, pymilvus.Hits)
+                hits: pymilvus.Hits = hits
+                for hit in hits:
+                    self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_simple_and_or(self):
         # (expr, expected_id_list)
@@ -344,7 +369,8 @@ class TestQuery(unittest.TestCase):
         collection.flush()
 
         for expr, expected_list in testcase_tuples:
-            sql = f"select * from {TEST_COLLECTION_NAME} where {expr};"
+            with_params = '{"metric_type":"L2", "nprobe":10}'
+            sql = f"select * from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0]] limit 20 where {expr} with {with_params};"
             print(f'sql: {sql}')
             parsed_data = parse(sql)
             print(f'parsed data: {parsed_data}')
@@ -352,9 +378,12 @@ class TestQuery(unittest.TestCase):
             query_result = call_by_parsed_data(parsed_data)
             print(f'query result: {query_result}')
 
-            remaining_ids = [row['book_id'] for row in query_result]
-            self.assertListEqual(expected_list, remaining_ids,
-                                 "The query result list is not equal to the expected list")
+            self.assertEqual(len(query_result), 1)
+            for hits in query_result:
+                self.assertIsInstance(hits, pymilvus.Hits)
+                hits: pymilvus.Hits = hits
+                for hit in hits:
+                    self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_simple_arithmetic(self):
         # (expr, expected_id_list)
@@ -371,7 +400,8 @@ class TestQuery(unittest.TestCase):
         collection.flush()
 
         for expr, expected_list in testcase_tuples:
-            sql = f"select * from {TEST_COLLECTION_NAME} where {expr};"
+            with_params = '{"metric_type":"L2", "nprobe":10}'
+            sql = f"select * from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0]] limit 20 where {expr} with {with_params};"
             print(f'sql: {sql}')
             parsed_data = parse(sql)
             print(f'parsed data: {parsed_data}')
@@ -379,9 +409,12 @@ class TestQuery(unittest.TestCase):
             query_result = call_by_parsed_data(parsed_data)
             print(f'query result: {query_result}')
 
-            remaining_ids = [row['book_id'] for row in query_result]
-            self.assertListEqual(expected_list, remaining_ids,
-                                 "The query result list is not equal to the expected list")
+            self.assertEqual(len(query_result), 1)
+            for hits in query_result:
+                self.assertIsInstance(hits, pymilvus.Hits)
+                hits: pymilvus.Hits = hits
+                for hit in hits:
+                    self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_subscript(self):
         # (expr, expected_id_list)
@@ -396,7 +429,8 @@ class TestQuery(unittest.TestCase):
         collection.flush()
 
         for expr, expected_list in testcase_tuples:
-            sql = f"select * from {TEST_COLLECTION_NAME} where {expr};"
+            with_params = '{"metric_type":"HAMMING", "nprobe":10}'
+            sql = f"select * from {TEST_COLLECTION_NAME} order by vector_field <-> [[1, 255]] limit 20 where {expr} with {with_params};"
             print(f'sql: {sql}')
             parsed_data = parse(sql)
             print(f'parsed data: {parsed_data}')
@@ -404,81 +438,95 @@ class TestQuery(unittest.TestCase):
             query_result = call_by_parsed_data(parsed_data)
             print(f'query result: {query_result}')
 
-            remaining_ids = [row['id_field'] for row in query_result]
-            self.assertListEqual(expected_list, remaining_ids,
-                                 "The query result list is not equal to the expected list")
+            self.assertEqual(len(query_result), 1)
+            for hits in query_result:
+                self.assertIsInstance(hits, pymilvus.Hits)
+                hits: pymilvus.Hits = hits
+                for hit in hits:
+                    self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_partition(self):
         self.create_json_array_collection()
         collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
         collection.create_partition("test")
-        sql = f"select * from partition test on {TEST_COLLECTION_NAME} where true = true;"
+        with_params = '{"metric_type":"HAMMING", "nprobe":10}'
+        sql = f"select * from partition test on {TEST_COLLECTION_NAME} order by vector_field <-> [[1, 255]] limit 20 where true = true with {with_params};"
         print(f'sql: {sql}')
         parsed_data = parse(sql)
         print(f'parsed data: {parsed_data}')
+
+        self.assertIn('test', parsed_data['parts'])
 
         query_result = call_by_parsed_data(parsed_data)
 
         print(f'query result: {query_result}')
 
-        expected_list = []
-        remaining_ids = [row['id_field'] for row in query_result]
-        self.assertListEqual(expected_list, remaining_ids,
-                             "The query result list is not equal to the expected list")
+        self.assertEqual(len(query_result), 1)
+        for hits in query_result:
+            self.assertIsInstance(hits, pymilvus.Hits)
+            hits: pymilvus.Hits = hits
+            for hit in hits:
+                self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_limit_offset_fields(self):
         self.create_book_collection()
         collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
         collection.flush()
 
-        sql = f"select book_id,book_name from {TEST_COLLECTION_NAME} limit 2 offset 2 where book_id in [0, 1, 2, 3, 4];"
+        with_params = '{"metric_type":"L2", "nprobe":10}'
+        sql = f"select book_id,book_name from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0]] limit 2 offset 2 where book_id in [0, 1, 2, 3, 4] with {with_params};"
         print(f'sql: {sql}')
         parsed_data = parse(sql)
         print(f'parsed data: {parsed_data}')
+
+        self.assertEqual(parsed_data['limit'], 2)
+        self.assertEqual(parsed_data['param']['offset'], 2)
 
         query_result = call_by_parsed_data(parsed_data)
 
         print(f'query result: {query_result}')
 
-        expected_list = [2, 3]
-        remaining_ids = [row['book_id'] for row in query_result]
-        self.assertListEqual(expected_list, remaining_ids,
-                             "The query result list is not equal to the expected list")
-        for result in query_result:
-            self.assertEqual(str(result['book_id']), result['book_name'], "Incorrect query result.")
-
-    def test_count_all(self):
-        self.create_book_collection()
-        collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
-        collection.flush()
-
-        sql = f"select count(*) from {TEST_COLLECTION_NAME} where book_id in [0, 1, 2, 3, 4];"
-        print(f'sql: {sql}')
-        parsed_data = parse(sql)
-        print(f'parsed data: {parsed_data}')
-
-        query_result = call_by_parsed_data(parsed_data)
-
-        print(f'query result: {query_result}')
-
-        expected = [{'count(*)': 5}]
-        self.assertListEqual(query_result, expected,
-                             "The query result list is not equal to the expected list")
+        self.assertEqual(len(query_result), 1)
+        for hits in query_result:
+            self.assertIsInstance(hits, pymilvus.Hits)
+            hits: pymilvus.Hits = hits
+            for hit in hits:
+                self.assertIsInstance(hit, pymilvus.Hit)
 
     def test_no_conditions(self):
         self.create_book_collection()
         collection = pymilvus.Collection(name=TEST_COLLECTION_NAME)
         collection.flush()
 
-        sql = f"select * from {TEST_COLLECTION_NAME} limit 10;"
+        with_params = '{"metric_type":"L2", "nprobe":10}'
+        sql = f"select * from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0]] limit 2 with {with_params};"
         print(f'sql: {sql}')
         parsed_data = parse(sql)
         print(f'parsed data: {parsed_data}')
+
+        self.assertEqual(parsed_data['expr'], '')
 
         query_result = call_by_parsed_data(parsed_data)
 
         print(f'query result: {query_result}')
 
-        expected = 5
-        self.assertEqual(len(query_result), expected,
-                         "The query result list is not equal to the expected list")
+        self.assertEqual(len(query_result), 1)
+        for hits in query_result:
+            self.assertIsInstance(hits, pymilvus.Hits)
+            hits: pymilvus.Hits = hits
+            for hit in hits:
+                self.assertIsInstance(hit, pymilvus.Hit)
+
+    def test_params(self):
+        with_params = '{"metric_type":"L2", "nprobe":10,"ef": 5, "radius": 1.0,"range_filter": 0.8}'
+        sql = f"select * from {TEST_COLLECTION_NAME} order by book_intro <-> [[0.0,2.0]] limit 2 with {with_params};"
+        print(f'sql: {sql}')
+        parsed_data = parse(sql)
+        print(f'parsed data: {parsed_data}')
+
+        self.assertEqual(parsed_data['expr'], '')
+        self.assertEqual(parsed_data['param']['metric_type'], 'L2')
+        self.assertEqual(parsed_data['param']['params']['nprobe'], 10)
+        self.assertEqual(parsed_data['param']['params']['ef'], 5)
+        self.assertEqual(parsed_data['param']['params']['radius'], 1.0)
+        self.assertEqual(parsed_data['param']['params']['range_filter'], 0.8)

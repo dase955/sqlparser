@@ -46,6 +46,20 @@ def search(query):
     collection = Collection(collection_name, using=using)
     output_fields = field_list
 
+    # for binary vector
+    new_data = []
+    for vector in data:
+        all_int = True
+        for num in vector:
+            if not isinstance(num, int):
+                all_int = False
+                break
+        if all_int:
+            new_data.append(bytes(vector))
+        else:
+            new_data.append(vector)
+    data = new_data
+
     if timeout is None:
         result = collection.search(data=data, anns_field=anns_field, param=param, limit=limit, expr=expr, 
                                    partition_names=partition_names, output_fields=output_fields, round_decimal=round_decimal,
@@ -54,16 +68,13 @@ def search(query):
         result = collection.search(data=data, anns_field=anns_field, param=param, limit=limit, expr=expr, 
                                    partition_names=partition_names, output_fields=output_fields, round_decimal=round_decimal,
                                    timeout=timeout, consistency_level=consistency_level, _async=_async, _callback=_callback)
-    
+
     for hits in result:
         for hit in hits:
             # get the value of an output field specified in the search request.
             # dynamic fields are supported, but vector fields are not supported yet.    
-            result_dict = {}
-            result_dict['pk'] = hit.entity.pk
-            result_dict['score'] = hit.entity.score
-            for field_name in output_fields:
-                result_dict[field_name] = hit.entity.get(field_name)
+            result_dict = {'pk': hit.entity.pk, 'score': hit.entity.score}
+            result_dict = result_dict | hit.fields
             result_dict_list.append(result_dict)
     
     for result_dict in result_dict_list:

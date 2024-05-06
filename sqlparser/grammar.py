@@ -261,6 +261,7 @@ def p_coll_param_list(p):
 def p_coll_param(p):
     """ coll_param : QSTRING ":" QSTRING
                    | QSTRING ":" NUMBER
+                   | QSTRING ":" FLOAT
     """
     p[0] = dict()
     if len(p) > 2:
