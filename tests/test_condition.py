@@ -28,6 +28,7 @@ class TestCondition(unittest.TestCase):
         4. 初始化一个 database。
         """
         # 修改 working dir
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
         os.chdir('..')
 
         # 连接

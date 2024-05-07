@@ -34,6 +34,7 @@ class TestQuery(unittest.TestCase):
         """
         # 修改 working dir
         if 'config.ini' not in os.listdir():
+            os.chdir(os.path.dirname(os.path.abspath(__file__)))
             os.chdir('..')
 
         # 连接
