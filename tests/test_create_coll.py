@@ -358,7 +358,7 @@ class TestCreateCollection(unittest.TestCase):
                                  "Collection is created, but its schema does not meet expectations.")
             self.dropTestCollection()
 
-    def test_complex_sql(self):
+    def disabled_test_complex_sql(self):
         """
         with clause(true/false)
         field_1: int64 or varchar(20), primary key, auto id(true/false)

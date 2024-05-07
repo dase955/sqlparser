@@ -115,13 +115,13 @@ def t_QSTRING(t):
 
 def t_FLOAT(t):
     # r"(-?\d+)(\.\d+)?"
-    r"[-+]?[0-9]+(\.([0-9]+)?([eE][-+]?[0-9]+)?|[eE][-+]?[0-9]+)"
+    r"[0-9]+(\.([0-9]+)?([eE][-+]?[0-9]+)?|[eE][-+]?[0-9]+)"
     t.value = float(t.value)
     return t
 
 
 def t_NUMBER(t):
-    r"(0|-?[1-9]\d*)"
+    r"(0|[1-9]\d*)"
     t.value = int(t.value)
     return t
 

@@ -131,7 +131,7 @@ def p_rename_coll(p):
 
 def p_load_coll(p):
     """ load_coll : LOAD COLLECTION STRING
-                  | LOAD COLLECTION STRING WITH "{" QSTRING ":" NUMBER "}"
+                  | LOAD COLLECTION STRING WITH "{" QSTRING ":" number_expr "}"
     """
     p[0] = {
         'type' : 'load_coll',
@@ -194,9 +194,9 @@ def p_field(p):
 
 def p_type(p):
     """ type : STRING
-             | STRING "(" NUMBER ")"
-             | STRING STRING "(" NUMBER ")"
-             | STRING "(" NUMBER ")" STRING "(" NUMBER ")"
+             | STRING "(" number_expr ")"
+             | STRING STRING "(" number_expr ")"
+             | STRING "(" number_expr ")" STRING "(" number_expr ")"
     """
     p[0] = dict()
     if len(p) == 2:
@@ -260,8 +260,8 @@ def p_coll_param_list(p):
 
 def p_coll_param(p):
     """ coll_param : QSTRING ":" QSTRING
-                   | QSTRING ":" NUMBER
-                   | QSTRING ":" FLOAT
+                   | QSTRING ":" number_expr
+                   | QSTRING ":" float_expr
     """
     p[0] = dict()
     if len(p) > 2:
@@ -310,7 +310,7 @@ def p_drop_part(p):
 
 def p_load_part(p):
     """ load_part : LOAD PARTITION STRING part_list ON STRING
-                  | LOAD PARTITION STRING part_list ON STRING WITH "{" QSTRING ":" NUMBER "}"
+                  | LOAD PARTITION STRING part_list ON STRING WITH "{" QSTRING ":" number_expr "}"
     """
     p[0] = {
         'type' : 'load_part',
@@ -565,8 +565,8 @@ def p_kv_pair(p):
     p[0] = { p[1] : p[3][0] }
 
 def p_single_value(p):
-    """ single_value : NUMBER
-                     | FLOAT
+    """ single_value : number_expr
+                     | float_expr
                      | QSTRING
                      | "{" json_value "}"
                      | "[" multi_value "]"
@@ -782,7 +782,7 @@ def p_conditions(p):
 
 def p_limit(p):
     """ limit : empty
-              | LIMIT NUMBER
+              | LIMIT number_expr
     """
     if len(p) == 2:
         p[0] = None
@@ -791,7 +791,7 @@ def p_limit(p):
 
 def p_offset(p):
     """ offset : empty
-               | OFFSET NUMBER
+               | OFFSET number_expr
     """
     if len(p) == 2:
         p[0] = None
@@ -844,7 +844,7 @@ def p_constant_expr(p):
 
 def p_identifier(p):
     """ identifier : STRING
-                   | identifier "[" NUMBER "]"
+                   | identifier "[" number_expr "]"
                    | identifier "[" QSTRING "]"
     """
     if len(p) == 2:
@@ -962,6 +962,33 @@ def p_condition_function_def(p):
     """
     p[0] = p[1].lower()
 
+
+def p_number_expr(p):
+    """ number_expr : "+" NUMBER
+                    | "-" NUMBER
+                    | NUMBER
+    """
+    if len(p) == 3:
+        if p[1] == '+':
+            p[0] = p[2]
+        elif p[1] == '-':
+            p[0] = -p[2]
+    elif len(p) == 2:
+        p[0] = p[1]
+
+
+def p_float_expr(p):
+    """ float_expr : "+" FLOAT
+                   | "-" FLOAT
+                   | FLOAT
+    """
+    if len(p) == 3:
+        if p[1] == '+':
+            p[0] = p[2]
+        elif p[1] == '-':
+            p[0] = -p[2]
+    elif len(p) == 2:
+        p[0] = p[1]
 
 # empty return None
 # so expression like (t : empty) => len(p)==2
