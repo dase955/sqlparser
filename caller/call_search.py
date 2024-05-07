@@ -14,7 +14,6 @@ def search(query):
     _async = False
     _callback = False
     round_decimal = -1
-    ignore_growing = False
     section = 'Search'
     if 'timeout' in configur[section]:
         timeout = configur.getfloat(section, 'timeout')
@@ -26,10 +25,7 @@ def search(query):
         _callback = configur.getboolean(section, '_callback')
     if 'round_decimal' in configur[section]:
         round_decimal = configur.getint(section, 'round_decimal')
-    if 'ignore_growing' in configur[section]:
-        ignore_growing = configur.getboolean(section, 'ignore_growing')
     param = query['param']
-    param['ignore_growing'] = ignore_growing
 
     collection_name = query['coll_name']
     field_list = query['fields']
