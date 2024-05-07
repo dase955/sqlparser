@@ -10,7 +10,7 @@
 
  - caller：输入上述得到的字典query，调用其对应的（在模块pymilvus实现的）接口，对milvus进行操作。字典query与接口的映射关系见caller中的func_map
 
-另外，本库一次仅支持建立一个Milvus Connection，启动时的相关配置见config.ini。仍需要对config.ini进行注释，TODO。
+另外，本库一次仅支持建立一个Milvus Connection，启动时的相关配置见config.ini。
 
 ## SQL语法
 
