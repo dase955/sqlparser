@@ -87,7 +87,7 @@ CREATE COLLECTION {coll_name} ({field_list})
      - `FLOAT`
      - `DOUBLE`
      - `JSON`
-     - `BINARY VECTOR(dim)`, dim取值为 $[1, 32768]$ 内的整数。
+     - `BINARY VECTOR(dim)`, dim取值为 $[1, 32768]$ 内的整数，并且必须为8的倍数。
      - `FLOAT VECTOR(dim)`, dim取值为 $[1, 32768]$ 内的整数。
      - ARRAY: 数组，需要指定其元素类型，形式为 `{元素类型} ARRAY` ，有效元素类型包括：
        - `INT8`
@@ -125,12 +125,15 @@ CREATE COLLECTION {coll_name} ({field_list})
 
    - partition_key_field: 分区键名称
 
- 例：` create collection TEST_COLLECTION (field_1 varchar(22222) auto id primary key description("field 1"),
+ 例：
+```
+    create collection TEST_COLLECTION (field_1 varchar(22222) auto id primary key description("field 1"),
                                          field_2 binary vector(32) description("field 2"),
                                          field_3 BOOL description("field 3"),
                                          field_4 varchar(63333) array(1234) description("field 4"),
                                          field_5 int64 partition key description("field 5"))
-                with {'num_shards': 2}; `
+                with {'num_shards': 2}; 
+```
 
 #### 重命名一个Collection
 
@@ -439,13 +442,13 @@ INSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
    - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
 
-   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[true, false, ...]，统一的格式为[item1, item2, ...]
 
-   - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
+   - BINARY VECTOR：[1, 255, ...]，一个 int8 数组，即数组中每个元素均为 $[0, 255]$ 内的整数，每个元素表示8个二进制位
 
-   - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
+   - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮点数
 
-   - JSON：不支持JSON类型，可以使用bulk insert来插入
+   - JSON：形如 `{"a": "b"}` 的 JSON 表达式
 
 #### 插入数据到这个Collection的一个分区
 
@@ -473,11 +476,11 @@ INSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
    - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
 
-   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[true, false, ...]，统一的格式为[item1, item2, ...]
 
-   - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
+   - BINARY VECTOR：[1, 255, ...]，一个 int8 数组，即数组中每个元素均为 $[0, 255]$ 内的整数，每个元素表示8个二进制位
 
-   - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
+   - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮点数
 
    - JSON：{ key : value }, value格式参考BOOL、INT8 / INT16 / INT32 / INT64、FLOAT / DOUBLE、VARCHAR和ARRAY，key可以为VARCHAR格式，例如{ 'key1' : 'value_test' }
 
@@ -505,9 +508,9 @@ UPSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
    - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
 
-   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[true, false, ...]，统一的格式为[item1, item2, ...]
 
-   - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
+   - BINARY VECTOR：[1, 255, ...]，一个 int8 数组，即数组中每个元素均为 $[0, 255]$ 内的整数，每个元素表示8个二进制位
 
    - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
 
@@ -539,9 +542,9 @@ UPSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
    - VARCHAR："a string 2"，'a string 2'，一个包含在单/双引号里的字符串即可
 
-   - ARRAY：由element type决定，比如BOOL ARRAY可以为[1, 0, ...]，统一的格式为[item1, item2, ...]
+   - ARRAY：由element type决定，比如BOOL ARRAY可以为[true, false, ...]，统一的格式为[item1, item2, ...]
 
-   - BINARY VECTOR：[1, 0, 1, 1, ...]，其中的元素只能为0或1
+   - BINARY VECTOR：[1, 255, ...]，一个 int8 数组，即数组中每个元素均为 $[0, 255]$ 内的整数，每个元素表示8个二进制位
 
    - FLOAT VECTOR：[1.0, 0.3, -1.2, ...]，其中的元素为正负浮动数
 
@@ -560,7 +563,7 @@ DELETE FROM {coll_name} WITH {'expr':'...'}
 
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`)
 
  - expr：这里的expr与Milvus文档里的expr的格式相同，与conditions只能二选一
 
@@ -579,7 +582,7 @@ DELETE FROM {coll_name} WITH {'expr':'...'}
 
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`)
 
  - expr：这里的expr为Milvus bool expression，与Milvus文档里的expr的格式相同，与conditions只能二选一
 
@@ -609,7 +612,7 @@ SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} LIMIT {l
 
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要查询的数据的筛选条件，类似于SQL里的where子句；整个where子句都是可选的，如果没有筛选条件，则LIMIT选项是必须的。具体格式如下。 TODO
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`)
 
  - expr：这里的expr为Milvus bool expression，与Milvus文档里的expr的格式相同，与conditions只能二选一
 
@@ -629,7 +632,7 @@ SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} ORDER BY
 SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} ORDER BY {search_field} <-> {vector_list} LIMIT {limit} OFFSET {offset} WHERE {conditions} WITH {param_list}
 
 # Example：SELECT book_id, book_price FROM book ORDER BY book_vector <-> [[1.0, 0.0], [2.2, 2.4]] LIMIT 20 OFFSET 2 WHERE book_id in [2, 200] WITH {"metric_type":"L2", "nprobe":10}
-# Example：SELECT book_id, book_price FROM book ORDER BY book_vector <-> [[1.0, 0.0], [2.2, 2.4]] LIMIT 20 OFFSET 2 WITH {"expr":"book_id < 200", metric_type":"L2", "nprobe":10}
+# Example：SELECT book_id, book_price FROM book ORDER BY binary_vector <-> [[1, 255], [255, 1]] LIMIT 20 OFFSET 2 WITH {"expr":"book_id < 200", metric_type":"HAMMING", "nprobe":10}
 # Example：SELECT book_id, book_price FROM PARTITION part1, part2 ON book ORDER BY book_vector <-> [[1.0, 0.0], [2.2, 2.4]] LIMIT 20 OFFSET 2 WITH {"expr":"book_id < 200", metric_type":"L2", "nprobe":10}
 ```
 
@@ -641,7 +644,7 @@ SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} ORDER BY
 
  - part_name_list：part_name的列表，part_name取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，具体格式如下。 TODO
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`)
 
  - limit：与Milvus Search里的参数limit相同
 
