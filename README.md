@@ -563,7 +563,7 @@ DELETE FROM {coll_name} WITH {'expr':'...'}
 
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`)
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`), 以及 milvus 文档中提到的几个函数 (`array_length`, `array_contains`, `array_contains_all`, `array_contains_any`, `json_contains`, `json_contains_all`, `json_contains_any`)
 
  - expr：这里的expr与Milvus文档里的expr的格式相同，与conditions只能二选一
 
@@ -582,7 +582,7 @@ DELETE FROM {coll_name} WITH {'expr':'...'}
 
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`)
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`), 以及 milvus 文档中提到的几个函数 (`array_length`, `array_contains`, `array_contains_all`, `array_contains_any`, `json_contains`, `json_contains_all`, `json_contains_any`)
 
  - expr：这里的expr为Milvus bool expression，与Milvus文档里的expr的格式相同，与conditions只能二选一
 
@@ -612,7 +612,7 @@ SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} LIMIT {l
 
  - coll_name：操作的collection的命名，取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`)
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`), 以及 milvus 文档中提到的几个函数 (`array_length`, `array_contains`, `array_contains_all`, `array_contains_any`, `json_contains`, `json_contains_all`, `json_contains_any`)
 
  - expr：这里的expr为Milvus bool expression，与Milvus文档里的expr的格式相同，与conditions只能二选一
 
@@ -644,7 +644,7 @@ SELECT {field_name_list} FROM PARTITION {part_name_list} ON {coll_name} ORDER BY
 
  - part_name_list：part_name的列表，part_name取值类型为字符串，且不可包含单/双引号
 
- - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`)
+ - conditions：需要删除的数据的筛选条件，类似于SQL里的where子句，支持 and, or, not, like, between and, in, 代数运算(`*`, `/`, `%`, `+`, `-`), 比较(`<`, `>`, `<=`, `>=`, `<>`, `!=`), 下标运算(`json_field["key"][0]`), 以及 milvus 文档中提到的几个函数 (`array_length`, `array_contains`, `array_contains_all`, `array_contains_any`, `json_contains`, `json_contains_all`, `json_contains_any`)
 
  - limit：与Milvus Search里的参数limit相同
 
