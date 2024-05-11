@@ -423,7 +423,7 @@ BULK INSERT COLLECTION {coll_name} FROM {file_list};
 ```
 INSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_2}),...;
 # Example 1: INSERT INTO book(book_id, book_intro) VALUES (1, [1.0, 2.0]), (2, [3.0, 2.0]);
-# Example 2: INSERT INTO book(book_id, book_intro) VALUES (3, [1.0, 3.0]);
+# Example 2: INSERT INTO book(book_id, book_intro, bool_val) VALUES (3, [1.0, 3.0], true);
 ```
 
 参数解释如下：
@@ -434,7 +434,7 @@ INSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
  - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - BOOL：1/0，1表示True，0表示False
+   - BOOL：true 或 false
 
    - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
 
@@ -468,7 +468,7 @@ INSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
  - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - BOOL：1/0，1表示True，0表示False
+   - BOOL：true 或 false
 
    - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
 
@@ -500,7 +500,7 @@ UPSERT INTO {coll_name}({field_name_list}) VALUES ({value_list_1}),({value_list_
 
  - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - BOOL：1/0，1表示True，0表示False
+   - BOOL：true 或 false
 
    - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
 
@@ -534,7 +534,7 @@ UPSERT INTO PARTITION {part_name} ON {coll_name}({field_name_list}) VALUES ({val
 
  - value_list：value的列表，value的取值根据field的类型有所不同，且不支持NULL值，举例见下。
 
-   - BOOL：1/0，1表示True，0表示False
+   - BOOL：true 或 false
 
    - INT8 / INT16 / INT32 / INT64：222，取正负整数即可
 
